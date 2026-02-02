@@ -18,8 +18,12 @@ const CHARACTERS_FILE = path.join(DATA_DIR, 'characters.json');
 const LISTS_FILE = path.join(DATA_DIR, 'lists.json');
 const LORA_META_FILE = path.join(DATA_DIR, 'lora_meta.json');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
+const SITUATIONS_FILE = path.join(DATA_DIR, 'situations.json');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+if (!fs.existsSync(CHARACTERS_FILE)) fs.writeFileSync(CHARACTERS_FILE, '[]');
+if (!fs.existsSync(LISTS_FILE)) fs.writeFileSync(LISTS_FILE, '[]');
+if (!fs.existsSync(SITUATIONS_FILE)) fs.writeFileSync(SITUATIONS_FILE, '{}');
 
 // --- Config Utils ---
 function readConfig() {
@@ -128,6 +132,16 @@ app.delete('/api/lists/:name', (req, res) => {
     lists = lists.filter((l: string) => l !== req.params.name);
     fs.writeFileSync(LISTS_FILE, JSON.stringify(lists, null, 2));
     res.json({ lists });
+});
+
+app.get('/api/situations', (req, res) => {
+    const data = JSON.parse(fs.readFileSync(SITUATIONS_FILE, 'utf8'));
+    res.json(data);
+});
+
+app.post('/api/situations', (req, res) => {
+    fs.writeFileSync(SITUATIONS_FILE, JSON.stringify(req.body, null, 2));
+    res.json({ success: true });
 });
 
 app.post('/api/upload', upload.single('image'), (req, res) => {

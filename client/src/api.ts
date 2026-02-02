@@ -163,3 +163,12 @@ export const uploadLoraTagImage = async (loraPath: string, tagName: string, file
     });
     return res.data;
 };
+export const getSituations = async () => {
+    const res = await api.get<Record<string, string>>('/situations');
+    return res.data;
+};
+
+export const saveSituations = async (templates: Record<string, string>) => {
+    const res = await api.post('/situations', templates);
+    return res.data;
+};
