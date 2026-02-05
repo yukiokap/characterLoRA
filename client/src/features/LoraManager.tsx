@@ -167,6 +167,7 @@ const FolderTreeItem = ({ item, level = 0, onSelect, currentPath, onUpdate, sele
                             onSelect={onSelect}
                             currentPath={currentPath}
                             onUpdate={onUpdate}
+                            selectedCount={selectedCount}
                             pinnedFolders={pinnedFolders}
                             onTogglePin={onTogglePin}
                         />
@@ -611,11 +612,15 @@ const formatSize = (bytes?: number) => {
 };
 
 const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowDescription, onToggleFav, onDelete, scale = 1, showPath = false, isSelected = false, onToggleSelect, selectedCount = 0 }: { file: LoraFile, meta: any, favLists?: string[], onUpdateMeta: (newMeta: any) => void, onShowTags: () => void, onShowDescription: () => void, onToggleFav: (file: LoraFile, list: string) => void, onDelete: () => void, scale?: number, showPath?: boolean, isSelected?: boolean, onToggleSelect?: () => void, selectedCount?: number }) => {
-    const [activeImgIdx, setActiveImgIdx] = useState(0);
+    const displayName = file.name.replace(/\.(safetensors|pt|ckpt)$/i, '');
+    const isXL = file.name.toLowerCase().includes('xl');
+    const isPony = file.name.toLowerCase().includes('pony');
+    const isIllustrious = file.name.toLowerCase().includes('illust') || file.name.toLowerCase().includes(' il');
     const [triggerWords, setTriggerWords] = useState(meta?.triggerWords || '');
     const [civitaiUrl, setCivitaiUrl] = useState(meta?.civitaiUrl || file.civitaiUrl || '');
     const [isEditing, setIsEditing] = useState(false);
     const [showFavMenu, setShowFavMenu] = useState(false);
+    const [activeImgIdx, setActiveImgIdx] = useState(0);
     const [isEditingAlias, setIsEditingAlias] = useState(false);
     const [tempAlias, setTempAlias] = useState(meta?.alias || '');
     const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -630,24 +635,35 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
             setTriggerWords(meta?.triggerWords || '');
             setCivitaiUrl(meta?.civitaiUrl || file.civitaiUrl || '');
         }
-    }, [meta, file.civitaiUrl, isEditing]);
+    }, [meta?.triggerWords, meta?.civitaiUrl, file.civitaiUrl, isEditing]);
 
-    const localPreviewUrl = file.previewPath ? `/api/loras/image?path=${encodeURIComponent(file.previewPath)}&t=${file.mtime ? new Date(file.mtime).getTime() : ''}` : null;
-    const civitaiImages = file.civitaiImages || [];
-    const allImages = [
-        ...(localPreviewUrl ? [localPreviewUrl] : []),
-        ...civitaiImages
-    ];
-    const currentImageUrl = allImages[activeImgIdx] || null;
+    useEffect(() => {
+        if (!isEditingAlias) {
+            setTempAlias(meta?.alias || '');
+        }
+    }, [meta?.alias, isEditingAlias]);
+
+    const allImages = React.useMemo(() => {
+        const localPreviewUrl = file.previewPath ? `/api/loras/image?path=${encodeURIComponent(file.previewPath)}&t=${file.mtime ? new Date(file.mtime).getTime() : ''}` : null;
+        const civitaiImages = Array.from(new Set([
+            ...(file.civitaiImages || []),
+            ...(meta?.civitaiImages || [])
+        ]));
+        return [
+            ...(localPreviewUrl ? [localPreviewUrl] : []),
+            ...civitaiImages
+        ];
+    }, [file.previewPath, file.mtime, file.civitaiImages, meta?.civitaiImages]);
+    const currentImageUrl = allImages[activeImgIdx] || (allImages.length > 0 ? allImages[0] : null);
 
     const nextImg = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setActiveImgIdx((activeImgIdx + 1) % allImages.length);
+        setActiveImgIdx((prev) => (prev + 1) % (allImages.length || 1));
     };
 
     const prevImg = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setActiveImgIdx((activeImgIdx - 1 + allImages.length) % allImages.length);
+        setActiveImgIdx((prev) => (prev - 1 + allImages.length) % (allImages.length || 1));
     };
 
     const handleSave = async () => {
@@ -690,13 +706,32 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
         }
     };
 
-    const displayName = file.name.replace(/\.(safetensors|pt|ckpt)$/i, '');
-    const isXL = file.name.toLowerCase().includes('xl');
-    const isPony = file.name.toLowerCase().includes('pony');
-    const isIllustrious = file.name.toLowerCase().includes('illust') || file.name.toLowerCase().includes(' il');
-
-    // Check if new (within 72 hours)
     const isNew = file.mtime ? (new Date().getTime() - new Date(file.mtime).getTime()) < (72 * 60 * 60 * 1000) : false;
+
+    useEffect(() => {
+        // Reset image index when switching models or folders
+        setActiveImgIdx(0);
+    }, [file.path]);
+
+    useEffect(() => {
+        // Background prefetch: if data is missing, fetch it silently
+        // This makes arrows appear automatically without opening the modal
+        if (file.modelId && allImages.length <= 1 && !meta?.civitaiImages) {
+            // We use a silent fetch that only updates the meta
+            const silentFetch = async () => {
+                try {
+                    const res = await api.get(`/loras/model-description?modelId=${file.modelId}&loraPath=${encodeURIComponent(file.path)}`);
+                    if (res.data.images && res.data.images.length > 0) {
+                        const images = res.data.images.map((img: any) => img.url).filter(Boolean);
+                        if (images.length > 0) {
+                            onUpdateMeta({ ...meta, civitaiImages: images });
+                        }
+                    }
+                } catch (e) { }
+            };
+            silentFetch();
+        }
+    }, [file.modelId, file.path]);
 
     return (
         <div
@@ -795,37 +830,60 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
 
             {/* Navigation Arrows */}
             {allImages.length > 1 && (
-                <div className="nav-arrows" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3 }}>
+                <div className="nav-arrows" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 100 }}>
                     <button
                         onClick={prevImg}
+                        className="nav-arrow-btn"
                         style={{
-                            position: 'absolute', left: '10px', top: '62%', transform: 'translateY(-50%)',
-                            background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
-                            padding: '8px', color: 'white', cursor: 'pointer', pointerEvents: 'auto',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            position: 'absolute', left: '8px', top: '60%', transform: 'translateY(-50%)',
+                            background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 100%)',
+                            backdropFilter: 'blur(8px)',
+                            border: '2px solid rgba(255,255,255,0.2)',
+                            borderRadius: '12px',
+                            width: '44px', height: '44px',
+                            color: 'white',
+                            cursor: 'pointer',
+                            pointerEvents: 'auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)'
                         }}
                     >
-                        <ChevronLeft size={20} />
+                        <ChevronLeft size={32} strokeWidth={3} />
+                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>‹</span>
                     </button>
                     <button
                         onClick={nextImg}
+                        className="nav-arrow-btn"
                         style={{
-                            position: 'absolute', right: '10px', top: '62%', transform: 'translateY(-50%)',
-                            background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
-                            padding: '8px', color: 'white', cursor: 'pointer', pointerEvents: 'auto',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            position: 'absolute', right: '8px', top: '60%', transform: 'translateY(-50%)',
+                            background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 100%)',
+                            backdropFilter: 'blur(8px)',
+                            border: '2px solid rgba(255,255,255,0.2)',
+                            borderRadius: '12px',
+                            width: '44px', height: '44px',
+                            color: 'white',
+                            cursor: 'pointer',
+                            pointerEvents: 'auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)'
                         }}
                     >
-                        <ChevronRight size={20} />
+                        <ChevronRight size={32} strokeWidth={3} />
+                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>›</span>
                     </button>
 
                     {/* Dots Indicator */}
-                    <div style={{ position: 'absolute', bottom: '85px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                    <div style={{ position: 'absolute', bottom: '90px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '5px' }}>
                         {allImages.map((_, i) => (
                             <div key={i} style={{
-                                width: '5px', height: '5px', borderRadius: '50%',
-                                background: i === activeImgIdx ? 'white' : 'rgba(255,255,255,0.4)',
-                                boxShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                                width: '6px', height: '6px', borderRadius: '50%',
+                                background: i === activeImgIdx ? 'var(--accent)' : 'rgba(255,255,255,0.3)',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                                transition: 'all 0.2s'
                             }} />
                         ))}
                     </div>
@@ -925,7 +983,7 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
             </div>
 
             {/* Top Right Actions */}
-            <div className="card-actions">
+            <div className="card-actions" style={{ zIndex: 110 }}>
                 {effectiveCivitaiUrl && (
                     <a href={effectiveCivitaiUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="action-btn" title="Civitaiで開く" style={{ color: '#fff' }}>
                         <Globe size={18} strokeWidth={2.5} />
@@ -937,7 +995,7 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
                 <button onClick={(e) => { e.stopPropagation(); copyPrompt(); }} title="プロンプトをコピー" className="action-btn" style={{ color: '#fff' }}>
                     <Copy size={18} strokeWidth={2.5} />
                 </button>
-                {(file.description || file.modelId || civitaiUrl) && (
+                {(file.modelId || civitaiUrl || meta?.civitaiUrl) && (
                     <button onClick={(e) => { e.stopPropagation(); onShowDescription(); }} title="説明文を表示" className="action-btn" style={{ color: '#fff' }}>
                         <Info size={18} strokeWidth={2.5} />
                     </button>
@@ -997,14 +1055,26 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
                             />
                         ) : (
                             <>
-                                <span style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onShowDescription(); }}>
+                                <span
+                                    style={{
+                                        cursor: 'pointer',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        flex: 1,
+                                        minWidth: 0
+                                    }}
+                                    onClick={(e) => { e.stopPropagation(); onShowDescription(); }}
+                                >
                                     {meta?.alias || displayName}
                                 </span>
-                                <Edit2
-                                    size={12}
-                                    style={{ opacity: 0.5, cursor: 'pointer' }}
-                                    onClick={(e) => { e.stopPropagation(); setIsEditingAlias(true); }}
-                                />
+                                <div style={{ flexShrink: 0, display: 'flex', marginLeft: 'auto' }}>
+                                    <Edit2
+                                        size={14}
+                                        style={{ opacity: 0.7, cursor: 'pointer', padding: '4px', margin: '-4px' }}
+                                        onClick={(e) => { e.stopPropagation(); setIsEditingAlias(true); }}
+                                    />
+                                </div>
                             </>
                         )}
                     </div>
@@ -1092,7 +1162,16 @@ export const LoraManager = () => {
             setLoading(true);
             const [data, lists] = await Promise.all([getLoraFiles(), getLists()]);
             setFiles(data.files || []);
-            setMeta(data.meta || {});
+
+            // Normalize meta keys to forward slashes
+            const normalizedMeta: LoraMeta = {};
+            if (data.meta) {
+                Object.entries(data.meta).forEach(([k, v]) => {
+                    normalizedMeta[normalizePath(k)] = v;
+                });
+            }
+            setMeta(normalizedMeta);
+
             setConfigDir(data.rootDir || '');
             setFavLists(lists || []);
         } catch (e) {
@@ -1113,6 +1192,33 @@ export const LoraManager = () => {
             if (c.loraDir) setConfigDir(c.loraDir);
             if (c.pinnedFolders) setPinnedFolders(c.pinnedFolders);
         });
+    }, []);
+
+    // Separate effect for bulk move event listener
+    useEffect(() => {
+        const handleBulkMove = async (e: any) => {
+            const destPath = e.detail?.destPath;
+            if (!destPath) return;
+
+            // Use functional setState to get current value
+            setSelectedPaths(currentPaths => {
+                const pathsToMove = currentPaths.filter(p => !isSamePath(p, destPath));
+                if (pathsToMove.length > 0) {
+                    // Perform the move asynchronously
+                    moveLoraNodesBatch(pathsToMove, destPath)
+                        .then(() => {
+                            fetchData();
+                        })
+                        .catch((err: any) => {
+                            alert('Bulk move failed: ' + (err.response?.data?.error || err.message));
+                        });
+                }
+                return []; // Clear selection
+            });
+        };
+
+        window.addEventListener('lora-bulk-move', handleBulkMove);
+        return () => window.removeEventListener('lora-bulk-move', handleBulkMove);
     }, []);
 
     const handleSaveConfig = async () => {
@@ -1357,16 +1463,41 @@ export const LoraManager = () => {
 
         if (modelId) {
             setLoadingDescription(true);
+            setFetchedDescription("");
+            setFetchedImages([]);
             try {
                 const res = await api.get(`/loras/model-description?modelId=${modelId}&loraPath=${encodeURIComponent(file.path)}${refresh ? '&refresh=true' : ''}`);
+
+                // If it was a default fetch (not refresh) and we found images, we need to update the global meta
+                // so the LoraCard picks up the arrows immediately without a full page refresh
+                if (!refresh && res.data.images && res.data.images.length > 0) {
+                    const images = res.data.images.map((img: any) => img.url).filter(Boolean);
+                    if (images.length > 0) {
+                        setMeta(prev => ({
+                            ...prev,
+                            [normalizePath(file.path)]: {
+                                ...(prev[normalizePath(file.path)] || {}),
+                                civitaiImages: images
+                            }
+                        }));
+                    }
+                }
+
                 if (res.data.description) {
                     setFetchedDescription(res.data.description);
+                } else {
+                    setFetchedDescription("<p style='text-align:center;padding:2rem;'>Description not available for this model.</p>");
                 }
-                if (res.data.images) {
+
+                if (res.data.images && res.data.images.length > 0) {
                     setFetchedImages(res.data.images);
+                } else {
+                    setFetchedImages([]);
                 }
             } catch (err) {
                 console.error("Failed to fetch description", err);
+                setFetchedDescription("<p style='text-align:center;padding:2rem;color:#ef4444;'>Failed to load from Civitai. The model may have been deleted.</p>");
+                setFetchedImages([]);
                 if (refresh) alert("failed to update from Civitai. The model might have been deleted.");
             } finally {
                 setLoadingDescription(false);
@@ -1874,10 +2005,11 @@ export const LoraManager = () => {
                                                 style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
                                             >
                                                 <LoraCard
+                                                    key={file.path}
                                                     file={file}
-                                                    meta={meta[file.path]}
+                                                    meta={getMetaValue(file.path)}
                                                     favLists={favLists}
-                                                    onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [file.path]: newMeta }))}
+                                                    onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [normalizePath(file.path)]: newMeta }))}
                                                     onShowTags={() => setSelectedLoraForTags(file)}
                                                     onShowDescription={() => handleShowDescription(file)}
                                                     onToggleFav={handleToggleLoraFav}
@@ -1929,10 +2061,11 @@ export const LoraManager = () => {
                                         style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
                                     >
                                         <LoraCard
+                                            key={file.path}
                                             file={file}
-                                            meta={meta[file.path]}
+                                            meta={getMetaValue(file.path)}
                                             favLists={favLists}
-                                            onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [file.path]: newMeta }))}
+                                            onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [normalizePath(file.path)]: newMeta }))}
                                             onShowTags={() => setSelectedLoraForTags(file)}
                                             onShowDescription={() => handleShowDescription(file)}
                                             onToggleFav={handleToggleLoraFav}
@@ -2000,16 +2133,20 @@ export const LoraManager = () => {
                         </h2>
                         {!loadingDescription && fetchedImages.length > 0 && (
                             <div style={{ marginBottom: '1.5rem', flexShrink: 0 }}>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Sample Images (Click to copy prompt)</div>
-                                <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.8rem' }}>Sample Images (Click to copy prompt)</div>
+                                <div style={{ display: 'flex', gap: '1.2rem', overflowX: 'auto', paddingBottom: '1rem', scrollbarWidth: 'thin' }}>
                                     {fetchedImages.map((img, idx) => (
                                         <div
                                             key={idx}
                                             style={{
-                                                flexShrink: 0, width: '150px', position: 'relative',
-                                                borderRadius: '8px', overflow: 'hidden', cursor: 'pointer',
-                                                border: '2px solid transparent'
+                                                flexShrink: 0, width: '180px', position: 'relative',
+                                                borderRadius: '10px', overflow: 'hidden', cursor: 'pointer',
+                                                border: '2px solid rgba(255,255,255,0.1)',
+                                                transition: 'transform 0.2s',
+                                                boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
                                             }}
+                                            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+                                            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 const prompt = img.meta?.prompt || '';
@@ -2020,10 +2157,10 @@ export const LoraManager = () => {
                                             }}
                                             title={img.meta?.prompt ? 'Click to copy generation prompt' : 'No prompt available'}
                                         >
-                                            <img src={img.url} style={{ width: '100%', height: '150px', objectFit: 'cover' }} alt="Sample" />
+                                            <img src={img.url} style={{ width: '100%', height: '220px', objectFit: 'cover' }} alt="Sample" />
                                             {img.meta?.prompt && (
-                                                <div style={{ position: 'absolute', bottom: 0, right: 0, padding: '2px', background: 'rgba(0,0,0,0.6)' }}>
-                                                    <Copy size={12} color="white" />
+                                                <div style={{ position: 'absolute', bottom: 0, right: 0, padding: '4px', background: 'rgba(0,0,0,0.7)', borderTopLeftRadius: '8px' }}>
+                                                    <Copy size={14} color="white" />
                                                 </div>
                                             )}
                                         </div>

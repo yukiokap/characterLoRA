@@ -190,7 +190,8 @@
     "order": 7
   },
   "character/anime/Kisaki Eri IL V2.safetensors": {
-    "order": 1
+    "order": 1,
+    "alias": ""
   },
   "character/anime/mamitomoeILM.safetensors": {
     "order": 30
@@ -780,7 +781,8 @@
     "order": 3
   },
   "character/anime/A-Bao A Qu, the Lightless Shadow illusXL v2.1.safetensors": {
-    "order": 9
+    "order": 9,
+    "alias": ""
   },
   "character/anime/Anzu_Mazaki_YGO_Duel_Monsters-000006.safetensors": {
     "order": 42
@@ -944,5 +946,36 @@
     "customTags": [
       "yuu morisawa,1girl,brown eyes,blue hair,short hair,bangs,hood,short sleeves,"
     ]
+  },
+  "clothes/bodycon_dress_ilxl_goofy.safetensors": {
+    "triggerWords": "",
+    "civitaiUrl": ""
+  },
+  "clothes/bitchidolv2.safetensors": {
+    "triggerWords": "",
+    "civitaiUrl": ""
+  },
+  "character/Final_Fantasy_Tactics_for_Illustrious.safetensors": {
+    "order": 0
+  },
+  "character/anime/Sp Little Knight & S-Force Rappa Chiyomaru illusXL v1.1.safetensors": {
+    "triggerWords": "",
+    "civitaiUrl": "",
+    "order": 1
+  },
+  "character/Romi_-_Catch_Teenieping___illustriousXL_.safetensors": {
+    "civitaiImages": [
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/57a842d7-b9f7-46be-8354-d57280070b39/original=true/104304354.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/23110bea-f706-4441-b9db-389a73762747/original=true/104304353.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/b5639eb9-40a8-434e-9cd2-0e99eead5765/original=true/104304357.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/e8d03656-4c11-476a-9d31-a313e27a1302/original=true/104304348.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/ae74121b-42c6-43cd-b3ea-1c07a0ca5e04/original=true/104304349.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/75449414-9e98-4617-b73a-6e33de23d6ee/original=true/104304356.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/8fb7c035-7eda-4a4a-9dc5-9cdf62279c68/original=true/104304350.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/74c4ab35-5991-45d9-877f-a94d19c57b3a/original=true/104304351.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/02e555ab-d655-47a6-a7ad-c220b8f8a333/original=true/104304346.jpeg",
+      "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/246f305e-957d-4d26-b42a-bc1a7f4594c9/original=true/104324699.jpeg"
+    ],
+    "order": 2
   }
 }

@@ -108,8 +108,13 @@ app.put('/api/characters/order', (req, res) => {
 });
 
 app.get('/api/lists', (req, res) => {
-    const data = JSON.parse(fs.readFileSync(LISTS_FILE, 'utf8'));
-    res.json(data);
+    try {
+        const data = JSON.parse(fs.readFileSync(LISTS_FILE, 'utf8'));
+        res.json(data);
+    } catch (err: any) {
+        console.error('[/api/lists Error]', err.message);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.post('/api/lists', (req, res) => {
@@ -166,7 +171,11 @@ function scanDirectory(dir: string, rootDir: string): any[] {
     }
 
     const result: any[] = [];
-    const meta = readLoraMeta();
+    const metaRaw = readLoraMeta();
+    const meta: any = {};
+    Object.entries(metaRaw).forEach(([k, v]) => {
+        meta[k.replace(/\\/g, '/')] = v;
+    });
 
     items.forEach(item => {
         try {
@@ -199,17 +208,23 @@ function scanDirectory(dir: string, rootDir: string): any[] {
                             fLower === nLower + '.preview.png') && f !== item;
                     });
 
-                    // Try to find modelId and trainedWords from .civitai.info
+                    // Try to find modelId and trainedWords from .civitai.info or .info
                     let modelId = undefined;
                     let trainedWords: string[] = [];
+                    let civitaiImages: string[] = [];
                     const infoFile = path.join(dir, nameNoExt + '.civitai.info');
-                    if (fs.existsSync(infoFile)) {
+                    const altInfoFile = path.join(dir, nameNoExt + '.info');
+                    const targetInfoFile = fs.existsSync(infoFile) ? infoFile : (fs.existsSync(altInfoFile) ? altInfoFile : null);
+
+                    if (targetInfoFile) {
                         try {
-                            const info = JSON.parse(fs.readFileSync(infoFile, 'utf8'));
-                            modelId = info.modelId;
+                            const info = JSON.parse(fs.readFileSync(targetInfoFile, 'utf8'));
+                            modelId = info.modelId || info.id;
                             if (info.trainedWords && Array.isArray(info.trainedWords)) {
                                 trainedWords = info.trainedWords;
                             }
+                            const rawImages = info.modelVersions?.[0]?.images || info.images || [];
+                            civitaiImages = rawImages.map((img: any) => typeof img === 'string' ? img : img.url).filter(Boolean);
                         } catch (e) { }
                     }
 
@@ -221,7 +236,9 @@ function scanDirectory(dir: string, rootDir: string): any[] {
                         mtime: stat.mtime,
                         previewPath: preview ? path.relative(rootDir, path.join(dir, preview)).replace(/\\/g, '/') : null,
                         modelId,
-                        trainedWords
+                        trainedWords,
+                        civitaiImages: (civitaiImages.length > 0) ? civitaiImages : (meta[relPath]?.civitaiImages || []),
+                        civitaiUrl: modelId ? `https://civitai.com/models/${modelId}` : (meta[relPath]?.civitaiUrl || null)
                     });
                 }
             }
@@ -233,13 +250,18 @@ function scanDirectory(dir: string, rootDir: string): any[] {
 }
 
 app.get('/api/loras/files', (req, res) => {
-    const config = readConfig();
-    if (!config.loraDir || !fs.existsSync(config.loraDir)) {
-        return res.json({ files: [], meta: {}, rootDir: config.loraDir });
+    try {
+        const config = readConfig();
+        if (!config.loraDir || !fs.existsSync(config.loraDir)) {
+            return res.json({ files: [], meta: {}, rootDir: config.loraDir });
+        }
+        const files = scanDirectory(config.loraDir, config.loraDir);
+        const meta = readLoraMeta();
+        res.json({ files, meta, rootDir: config.loraDir });
+    } catch (err: any) {
+        console.error('[/api/loras/files Error]', err.message);
+        res.status(500).json({ error: err.message });
     }
-    const files = scanDirectory(config.loraDir, config.loraDir);
-    const meta = readLoraMeta();
-    res.json({ files, meta, rootDir: config.loraDir });
 });
 
 app.get('/api/loras/image', (req, res) => {
@@ -468,7 +490,7 @@ app.get('/api/loras/model-description', async (req, res) => {
         }
     }
 
-    if (localInfo && !req.query.refresh) {
+    if (localInfo && Object.keys(localInfo).length > 5 && !req.query.refresh) {
         // Construct combined description from local info
         let combinedDesc = localInfo.description || '';
         if (localInfo.modelVersions && localInfo.modelVersions.length > 0) {
@@ -502,10 +524,24 @@ app.get('/api/loras/model-description', async (req, res) => {
         let combinedDesc = response.data.description || '';
         const versions = response.data.modelVersions;
         if (versions && versions.length > 0) {
-            const latest = versions[0];
-            if (latest.description && latest.description !== response.data.description) {
-                combinedDesc += (combinedDesc ? '<hr/>' : '') + `<h4>Version: ${latest.name}</h4>` + latest.description;
-            }
+            versions.forEach((v: any) => {
+                if (v.description && v.description !== response.data.description) {
+                    combinedDesc += (combinedDesc ? '<hr/>' : '') + `<h4>Version: ${v.name}</h4>` + v.description;
+                }
+            });
+        }
+
+        // Final fallback if still empty
+        if (!combinedDesc && versions && versions.length > 0) {
+            const v = versions[0];
+            combinedDesc = `
+                <div style="text-align:center;padding:1rem;">
+                    <p>Model found on Civitai, but no text description was provided.</p>
+                    <p><strong>Base Model:</strong> ${v.baseModel || 'Unknown'}</p>
+                    <p><strong>Created:</strong> ${v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'Unknown'}</p>
+                    ${v.trainedWords?.length ? `<p><strong>Trained Words:</strong> ${v.trainedWords.join(', ')}</p>` : ''}
+                </div>
+            `;
         }
 
         // 3. Save to Local .civitai.info AUTOMATICALLY
@@ -513,15 +549,23 @@ app.get('/api/loras/model-description', async (req, res) => {
             const fullLoraPath = path.join(config.loraDir, loraPath);
             const infoFile = path.join(path.dirname(fullLoraPath), path.parse(fullLoraPath).name + '.civitai.info');
             fs.writeFileSync(infoFile, JSON.stringify(response.data, null, 2), 'utf8');
+
+            // ALSO update lora_meta.json with images for immediate card update
+            const meta = readLoraMeta();
+            const images = response.data.modelVersions?.[0]?.images?.map((img: any) => img.url).filter(Boolean) || [];
+            if (images.length > 0) {
+                meta[loraPath] = { ...(meta[loraPath] || {}), civitaiImages: images };
+                writeLoraMeta(meta);
+            }
         }
 
-        if (combinedDesc) {
-            const images = response.data.modelVersions?.[0]?.images || [];
-            DESCRIPTION_CACHE[modelId] = { description: combinedDesc, images };
+        const civImages = response.data.modelVersions?.[0]?.images || [];
+        if (combinedDesc || civImages.length > 0) {
+            DESCRIPTION_CACHE[modelId] = { description: combinedDesc, images: civImages };
             res.json({
                 description: combinedDesc,
                 isLocal: false,
-                images: images
+                images: civImages
             });
         } else {
             res.status(404).json({ error: 'Not found' });
@@ -698,4 +742,4 @@ app.delete('/api/wildcards/file', (req, res) => {
     res.json({ success: true });
 });
 
-app.listen(port, () => console.log(`Server running at http://localhost:${port}`));
+app.listen(port, '127.0.0.1', () => console.log(`Server running at http://127.0.0.1:${port}`));

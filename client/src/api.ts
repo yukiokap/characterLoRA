@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { Character } from './types';
 
 export const api = axios.create({
-    baseURL: '/api'
+    baseURL: import.meta.env.DEV ? 'http://127.0.0.1:3001/api' : '/api'
 });
 
 export const uploadImage = async (file: File) => {
