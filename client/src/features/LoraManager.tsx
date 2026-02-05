@@ -958,13 +958,18 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
                 )}
             </div>
 
-            {/* Top Left Tags */}
-            <div style={{ position: 'absolute', top: '10px', left: '42px', display: 'flex', gap: '5px', zIndex: 2 }}>
-                {isNew && <span style={{ background: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>NEW</span>}
-                <span style={{ background: '#2563eb', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>LORA</span>
-                {isIllustrious && <span style={{ background: '#4f46e5', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>Illustrious</span>}
-                {isXL && <span style={{ background: '#7c3aed', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>XL</span>}
-                {isPony && <span style={{ background: '#db2777', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>Pony</span>}
+
+            {/* Top Left Tags - 2 rows */}
+            <div style={{ position: 'absolute', top: '10px', left: '42px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 2 }}>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    {isNew && <span style={{ background: '#f59e0b', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>NEW</span>}
+                    <span style={{ background: '#2563eb', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>LORA</span>
+                </div>
+                <div style={{ display: 'flex', gap: '5px' }}>
+                    {isIllustrious && <span style={{ background: '#4f46e5', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>Illustrious</span>}
+                    {isXL && <span style={{ background: '#7c3aed', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>XL</span>}
+                    {isPony && <span style={{ background: '#db2777', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>Pony</span>}
+                </div>
             </div>
 
             {/* Selection Checkbox */}
