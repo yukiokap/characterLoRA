@@ -27,8 +27,10 @@ if (!fs.existsSync(SITUATIONS_FILE)) fs.writeFileSync(SITUATIONS_FILE, '{}');
 
 // --- Config Utils ---
 function readConfig() {
-    if (!fs.existsSync(CONFIG_FILE)) return { loraDir: '' };
-    return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+    if (!fs.existsSync(CONFIG_FILE)) return { loraDir: '', wildcardDir: '' };
+    const config = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+    if (!config.wildcardDir) config.wildcardDir = '';
+    return config;
 }
 function writeConfig(config: any) {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
@@ -67,8 +69,10 @@ app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 app.get('/api/config', (req, res) => res.json(readConfig()));
 app.put('/api/config', (req, res) => {
-    writeConfig(req.body);
-    res.json(req.body);
+    const currentConfig = readConfig();
+    const newConfig = { ...currentConfig, ...req.body };
+    writeConfig(newConfig);
+    res.json(newConfig);
 });
 
 app.get('/api/characters', (req, res) => {
@@ -152,74 +156,77 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
 // --- LoRA Features ---
 
 function scanDirectory(dir: string, rootDir: string): any[] {
-    const items = fs.readdirSync(dir);
+    if (!fs.existsSync(dir)) return [];
+    let items: string[] = [];
+    try {
+        items = fs.readdirSync(dir);
+    } catch (e) {
+        console.error(`Error reading directory ${dir}:`, e);
+        return [];
+    }
+
     const result: any[] = [];
     const meta = readLoraMeta();
 
     items.forEach(item => {
-        const fullPath = path.join(dir, item);
-        const relPath = path.relative(rootDir, fullPath).replace(/\\/g, '/');
-        const stat = fs.statSync(fullPath);
+        try {
+            const fullPath = path.join(dir, item);
+            const relPath = path.relative(rootDir, fullPath).replace(/\\/g, '/');
+            const stat = fs.statSync(fullPath);
 
-        if (stat.isDirectory()) {
-            result.push({
-                type: 'directory',
-                name: item,
-                path: relPath,
-                children: scanDirectory(fullPath, rootDir)
-            });
-        } else {
-            const ext = path.extname(item).toLowerCase();
-            if (['.safetensors', '.pt', '.ckpt'].includes(ext)) {
-                const nameNoExt = path.parse(item).name;
-
-                // Find local previews - more robust search
-                const allFiles = fs.readdirSync(dir);
-                const preview = allFiles.find(f => {
-                    const fLower = f.toLowerCase();
-                    const nLower = nameNoExt.toLowerCase();
-                    return (fLower === nLower + '.png' ||
-                        fLower === nLower + '.jpg' ||
-                        fLower === nLower + '.jpeg' ||
-                        fLower === nLower + '.webp' ||
-                        fLower === nLower + '.gif' ||
-                        fLower === nLower + '.mp4' ||
-                        fLower === nLower + '.preview.png') && f !== item;
-                });
-
-                // Try to find modelId and images from .civitai.info
-                let modelId = undefined;
-                let description = undefined;
-                let civitaiImages: string[] = [];
-                let trainedWords: string[] = [];
-                const infoFile = path.join(dir, nameNoExt + '.civitai.info');
-                if (fs.existsSync(infoFile)) {
-                    try {
-                        const info = JSON.parse(fs.readFileSync(infoFile, 'utf8'));
-                        modelId = info.modelId;
-                        description = info.description;
-                        if (info.images && Array.isArray(info.images)) {
-                            civitaiImages = info.images.map((img: any) => img.url).filter(Boolean);
-                        }
-                        if (info.trainedWords && Array.isArray(info.trainedWords)) {
-                            trainedWords = info.trainedWords;
-                        }
-                    } catch (e) { }
-                }
-
+            if (stat.isDirectory()) {
                 result.push({
-                    type: 'file',
+                    type: 'directory',
                     name: item,
                     path: relPath,
-                    size: stat.size,
-                    mtime: stat.mtime,
-                    previewPath: preview ? path.relative(rootDir, path.join(dir, preview)).replace(/\\/g, '/') : null,
-                    modelId,
-                    description,
-                    civitaiImages,
-                    trainedWords
+                    children: scanDirectory(fullPath, rootDir)
                 });
+            } else {
+                const ext = path.extname(item).toLowerCase();
+                if (['.safetensors', '.pt', '.ckpt'].includes(ext)) {
+                    const nameNoExt = path.parse(item).name;
+
+                    // Use the already fetched 'items' to find previews
+                    const preview = items.find(f => {
+                        const fLower = f.toLowerCase();
+                        const nLower = nameNoExt.toLowerCase();
+                        return (fLower === nLower + '.png' ||
+                            fLower === nLower + '.jpg' ||
+                            fLower === nLower + '.jpeg' ||
+                            fLower === nLower + '.webp' ||
+                            fLower === nLower + '.gif' ||
+                            fLower === nLower + '.mp4' ||
+                            fLower === nLower + '.preview.png') && f !== item;
+                    });
+
+                    // Try to find modelId and trainedWords from .civitai.info
+                    let modelId = undefined;
+                    let trainedWords: string[] = [];
+                    const infoFile = path.join(dir, nameNoExt + '.civitai.info');
+                    if (fs.existsSync(infoFile)) {
+                        try {
+                            const info = JSON.parse(fs.readFileSync(infoFile, 'utf8'));
+                            modelId = info.modelId;
+                            if (info.trainedWords && Array.isArray(info.trainedWords)) {
+                                trainedWords = info.trainedWords;
+                            }
+                        } catch (e) { }
+                    }
+
+                    result.push({
+                        type: 'file',
+                        name: item,
+                        path: relPath,
+                        size: stat.size,
+                        mtime: stat.mtime,
+                        previewPath: preview ? path.relative(rootDir, path.join(dir, preview)).replace(/\\/g, '/') : null,
+                        modelId,
+                        trainedWords
+                    });
+                }
             }
+        } catch (e) {
+            console.error(`Error processing item ${item} in ${dir}:`, e);
         }
     });
     return result;
@@ -444,8 +451,36 @@ const DESCRIPTION_CACHE: Record<string, string> = {};
 
 app.get('/api/loras/model-description', async (req, res) => {
     const modelId = req.query.modelId as string;
+    const loraPath = req.query.loraPath as string;
     if (!modelId) return res.status(400).json({ error: 'Missing modelId' });
 
+    const config = readConfig();
+    let localInfo = null;
+
+    // 1. Try to Load from Local .civitai.info if not refreshing
+    if (loraPath && !req.query.refresh) {
+        const fullLoraPath = path.join(config.loraDir, loraPath);
+        const infoFile = path.join(path.dirname(fullLoraPath), path.parse(fullLoraPath).name + '.civitai.info');
+        if (fs.existsSync(infoFile)) {
+            try {
+                localInfo = JSON.parse(fs.readFileSync(infoFile, 'utf8'));
+            } catch (e) { }
+        }
+    }
+
+    if (localInfo && !req.query.refresh) {
+        // Construct combined description from local info
+        let combinedDesc = localInfo.description || '';
+        if (localInfo.modelVersions && localInfo.modelVersions.length > 0) {
+            const v = localInfo.modelVersions[0];
+            if (v.description && v.description !== localInfo.description) {
+                combinedDesc += (combinedDesc ? '<hr/>' : '') + `<h4>Version: ${v.name}</h4>` + v.description;
+            }
+        }
+        return res.json({ description: combinedDesc, isLocal: true });
+    }
+
+    // 2. Fallback to API/Cache
     if (DESCRIPTION_CACHE[modelId] && !req.query.refresh) {
         return res.json({ description: DESCRIPTION_CACHE[modelId] });
     }
@@ -455,21 +490,26 @@ app.get('/api/loras/model-description', async (req, res) => {
             headers: { 'User-Agent': 'Mozilla/5.0' }
         });
 
-        let combinedDesc = '';
-        if (response.data.description) combinedDesc = response.data.description;
-
+        // Combined description logic
+        let combinedDesc = response.data.description || '';
         const versions = response.data.modelVersions;
         if (versions && versions.length > 0) {
             const latest = versions[0];
             if (latest.description && latest.description !== response.data.description) {
-                if (combinedDesc) combinedDesc += '<hr/>';
-                combinedDesc += `<h4>Version: ${latest.name}</h4>` + latest.description;
+                combinedDesc += (combinedDesc ? '<hr/>' : '') + `<h4>Version: ${latest.name}</h4>` + latest.description;
             }
+        }
+
+        // 3. Save to Local .civitai.info AUTOMATICALLY
+        if (loraPath) {
+            const fullLoraPath = path.join(config.loraDir, loraPath);
+            const infoFile = path.join(path.dirname(fullLoraPath), path.parse(fullLoraPath).name + '.civitai.info');
+            fs.writeFileSync(infoFile, JSON.stringify(response.data, null, 2), 'utf8');
         }
 
         if (combinedDesc) {
             DESCRIPTION_CACHE[modelId] = combinedDesc;
-            res.json({ description: combinedDesc });
+            res.json({ description: combinedDesc, isLocal: false });
         } else {
             res.status(404).json({ error: 'Not found' });
         }
@@ -496,8 +536,9 @@ app.post('/api/loras/upload-preview', upload.single('image'), (req, res) => {
     const newPreviewPath = path.join(loraDir, loraNameNoExt + imgExt);
 
     try {
-        // Move uploaded file to lora directory with correct name
-        fs.renameSync(req.file.path, newPreviewPath);
+        // Safe move across drives: copy then delete
+        fs.copyFileSync(req.file.path, newPreviewPath);
+        fs.unlinkSync(req.file.path);
         res.json({ success: true, previewPath: path.relative(config.loraDir, newPreviewPath).replace(/\\/g, '/') });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
@@ -528,12 +569,120 @@ app.post('/api/loras/upload-tag-image', upload.single('image'), (req, res) => {
     const targetPath = path.join(tagImagesDir, tagImgName);
 
     try {
-        fs.renameSync(req.file.path, targetPath);
+        fs.copyFileSync(req.file.path, targetPath);
+        fs.unlinkSync(req.file.path);
         const relPath = path.relative(path.resolve(config.loraDir), path.resolve(targetPath)).replace(/\\/g, '/');
         res.json({ success: true, imagePath: relPath });
     } catch (e: any) {
         res.status(500).json({ error: e.message });
     }
+});
+
+// --- Wildcard Features ---
+
+function scanWildcardDir(dir: string, rootDir: string): any[] {
+    if (!fs.existsSync(dir)) return [];
+    const items = fs.readdirSync(dir);
+    const result: any[] = [];
+
+    items.forEach(item => {
+        const fullPath = path.join(dir, item);
+        const relPath = path.relative(rootDir, fullPath).replace(/\\/g, '/');
+        const stat = fs.statSync(fullPath);
+
+        if (stat.isDirectory()) {
+            result.push({
+                type: 'directory',
+                name: item,
+                path: relPath,
+                children: scanWildcardDir(fullPath, rootDir)
+            });
+        } else {
+            const ext = path.extname(item).toLowerCase();
+            if (ext === '.txt') {
+                result.push({
+                    type: 'file',
+                    name: item,
+                    path: relPath,
+                    size: stat.size,
+                    mtime: stat.mtime
+                });
+            }
+        }
+    });
+    return result;
+}
+
+app.get('/api/wildcards/files', (req, res) => {
+    const config = readConfig();
+    if (!config.wildcardDir || !fs.existsSync(config.wildcardDir)) {
+        return res.json({ files: [], rootDir: config.wildcardDir || '' });
+    }
+    const files = scanWildcardDir(config.wildcardDir, config.wildcardDir);
+    res.json({ files, rootDir: config.wildcardDir });
+});
+
+app.get('/api/wildcards/content', (req, res) => {
+    const { path: relPath } = req.query;
+    if (!relPath) return res.status(400).send('Missing path');
+    const config = readConfig();
+    const fullPath = path.join(config.wildcardDir, relPath as string);
+
+    if (!fullPath.toLowerCase().startsWith(path.resolve(config.wildcardDir).toLowerCase())) {
+        return res.status(403).send('Forbidden');
+    }
+
+    if (!fs.existsSync(fullPath)) return res.status(404).send('Not found');
+    const content = fs.readFileSync(fullPath, 'utf8');
+    res.json({ content });
+});
+
+app.put('/api/wildcards/content', (req, res) => {
+    const { path: relPath, content } = req.body;
+    if (!relPath) return res.status(400).send('Missing path');
+    const config = readConfig();
+    const fullPath = path.join(config.wildcardDir, relPath);
+
+    if (!fullPath.toLowerCase().startsWith(path.resolve(config.wildcardDir).toLowerCase())) {
+        return res.status(403).send('Forbidden');
+    }
+
+    fs.writeFileSync(fullPath, content, 'utf8');
+    res.json({ success: true });
+});
+
+app.post('/api/wildcards/file', (req, res) => {
+    const { parentPath, name } = req.body;
+    const config = readConfig();
+    const fullPath = path.join(config.wildcardDir, parentPath, name.endsWith('.txt') ? name : name + '.txt');
+
+    if (!fullPath.toLowerCase().startsWith(path.resolve(config.wildcardDir).toLowerCase())) {
+        return res.status(403).send('Forbidden');
+    }
+
+    if (fs.existsSync(fullPath)) return res.status(400).json({ error: 'File already exists' });
+
+    fs.writeFileSync(fullPath, '', 'utf8');
+    res.json({ success: true });
+});
+
+app.delete('/api/wildcards/file', (req, res) => {
+    const { targetPath } = req.body;
+    const config = readConfig();
+    const fullPath = path.join(config.wildcardDir, targetPath);
+
+    if (!fullPath.toLowerCase().startsWith(path.resolve(config.wildcardDir).toLowerCase())) {
+        return res.status(403).send('Forbidden');
+    }
+
+    if (fs.existsSync(fullPath)) {
+        if (fs.statSync(fullPath).isDirectory()) {
+            fs.rmSync(fullPath, { recursive: true });
+        } else {
+            fs.unlinkSync(fullPath);
+        }
+    }
+    res.json({ success: true });
 });
 
 app.listen(port, () => console.log(`Server running at http://localhost:${port}`));

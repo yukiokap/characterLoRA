@@ -1,8 +1,22 @@
 node_modules/
 dist/
-.env
+dist-electron/
+.env*
 *.log
 .DS_Store
 .venv/
 build/
 .cache/
+
+# App specific
+client/node_modules/
+client/dist/
+server/node_modules/
+server/dist/
+server/uploads/
+server/data/*.json
+!server/data/config.json.example
+
+# Temporary files
+*.tmp
+temp/

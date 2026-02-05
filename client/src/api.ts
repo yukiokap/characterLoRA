@@ -91,6 +91,10 @@ export interface LoraMeta {
 
 export interface AppConfig {
     loraDir: string;
+    wildcardDir: string;
+    geminiApiKey?: string;
+    geminiModel?: string;
+    openaiApiKey?: string;
 }
 
 export const getAppConfig = async () => {
@@ -170,5 +174,41 @@ export const getSituations = async () => {
 
 export const saveSituations = async (templates: Record<string, string>) => {
     const res = await api.post('/situations', templates);
+    return res.data;
+};
+
+// --- Wildcard APIs ---
+
+export interface WildcardFile {
+    type: 'file' | 'directory';
+    name: string;
+    path: string;
+    size?: number;
+    mtime?: string | Date;
+    children?: WildcardFile[];
+}
+
+export const getWildcardFiles = async () => {
+    const res = await api.get<{ files: WildcardFile[], rootDir: string }>('/wildcards/files');
+    return res.data;
+};
+
+export const getWildcardContent = async (path: string) => {
+    const res = await api.get<{ content: string }>(`/wildcards/content?path=${encodeURIComponent(path)}`);
+    return res.data.content;
+};
+
+export const saveWildcardContent = async (path: string, content: string) => {
+    const res = await api.put('/wildcards/content', { path, content });
+    return res.data;
+};
+
+export const createWildcardFile = async (parentPath: string, name: string) => {
+    const res = await api.post('/wildcards/file', { parentPath, name });
+    return res.data;
+};
+
+export const deleteWildcardFile = async (targetPath: string) => {
+    const res = await api.delete('/wildcards/file', { data: { targetPath } });
     return res.data;
 };

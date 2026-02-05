@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { VirtuosoGrid } from 'react-virtuoso';
 import { getLoraFiles, updateLoraMeta, updateLoraMetaBatch, createLoraFolder, getAppConfig, updateAppConfig, renameLoraNode, deleteLoraNode, moveLoraNode, moveLoraNodesBatch, uploadLoraPreview, getLists, saveLists, renameList, deleteList, uploadLoraTagImage, type LoraFile, type LoraMeta, api } from '../api';
 import { Search, Folder, Settings, Heart, ChevronRight, ChevronDown, Copy, Plus, Globe, List, X, Edit2, Trash2, ZoomIn, ZoomOut, ChevronLeft, Info, RefreshCw } from 'lucide-react';
 
@@ -166,6 +167,7 @@ const TagSidebar = ({ file, meta, onUpdateMeta, onClose }: { file: LoraFile, met
     const [editingTagValue, setEditingTagValue] = useState('');
     const [localTriggerWords, setLocalTriggerWords] = useState(meta?.triggerWords || '');
     const [includeLoraPrefix, setIncludeLoraPrefix] = useState(true);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
     const previewUrl = file.previewPath ? `/api/loras/image?path=${encodeURIComponent(file.previewPath)}&t=${file.mtime ? new Date(file.mtime).getTime() : ''}` : null;
 
@@ -249,6 +251,30 @@ const TagSidebar = ({ file, meta, onUpdateMeta, onClose }: { file: LoraFile, met
 
     const getCleanName = () => file.name.replace(/\.(safetensors|pt|ckpt)$/i, '');
     const loraPrefix = `<lora:${getCleanName()}:${strength}>`;
+
+    const toggleTagSelection = (tag: string) => {
+        setSelectedTags(prev =>
+            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+        );
+    };
+
+    const handleCopySelected = () => {
+        const parts = [];
+        if (includeLoraPrefix) parts.push(loraPrefix);
+        if (localTriggerWords.trim()) parts.push(localTriggerWords.trim());
+        if (selectedTags.length > 0) parts.push(selectedTags.join(', '));
+
+        const finalPrompt = parts.join(' ');
+        handleCopy(finalPrompt);
+    };
+
+    const handleSelectAll = () => {
+        if (selectedTags.length === allSuggestions.length) {
+            setSelectedTags([]);
+        } else {
+            setSelectedTags([...allSuggestions]);
+        }
+    };
 
     return (
         <div style={{
@@ -339,7 +365,15 @@ const TagSidebar = ({ file, meta, onUpdateMeta, onClose }: { file: LoraFile, met
                     </div>
 
                     <div>
-                        <div style={{ fontSize: '0.8rem', marginBottom: '4px', color: 'var(--text-secondary)' }}>Filter Suggestions</div>
+                        <div style={{ fontSize: '0.8rem', marginBottom: '4px', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Filter Suggestions</span>
+                            <button
+                                onClick={handleSelectAll}
+                                style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}
+                            >
+                                {selectedTags.length === allSuggestions.length ? 'Deselect All' : 'Select All'}
+                            </button>
+                        </div>
                         <input
                             placeholder="Filter tags..."
                             value={filter}
@@ -378,22 +412,36 @@ const TagSidebar = ({ file, meta, onUpdateMeta, onClose }: { file: LoraFile, met
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        justifyContent: 'space-between',
+                                        justifyContent: 'flex-start',
                                         fontSize: '0.9rem',
                                         transition: 'all 0.2s',
                                         border: isCustom ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
                                         position: 'relative',
-                                        overflow: 'hidden'
+                                        overflow: 'hidden',
+                                        gap: '12px'
                                     }}
-                                    onClick={() => !isEditingThis && handleCopy(includeLoraPrefix ? `${loraPrefix}, ${word}` : word)}
+                                    onClick={() => !isEditingThis && toggleTagSelection(word)}
                                 >
+                                    <div style={{ zIndex: 5, position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedTags.includes(word)}
+                                            onChange={() => toggleTagSelection(word)}
+                                            onClick={e => e.stopPropagation()}
+                                            style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                                        />
+                                    </div>
                                     {meta?.tagImages?.[word] && (
-                                        <div style={{
-                                            position: 'absolute', right: 0, top: 0, bottom: 0, width: '120px',
-                                            opacity: 0.35, pointerEvents: 'none', zIndex: 0,
-                                            maskImage: 'linear-gradient(to left, black 40%, transparent 100%)',
-                                            WebkitMaskImage: 'linear-gradient(to left, black 40%, transparent 100%)'
-                                        }}>
+                                        <div
+                                            className="tag-image-bg"
+                                            style={{
+                                                position: 'absolute', right: 0, top: 0, bottom: 0, width: '180px',
+                                                opacity: 0.5, pointerEvents: 'none', zIndex: 0,
+                                                maskImage: 'linear-gradient(to left, black 60%, transparent 100%)',
+                                                WebkitMaskImage: 'linear-gradient(to left, black 60%, transparent 100%)',
+                                                transition: 'opacity 0.2s'
+                                            }}
+                                        >
                                             <img
                                                 src={`/api/loras/image?path=${encodeURIComponent(meta.tagImages[word])}`}
                                                 alt=""
@@ -523,16 +571,16 @@ const TagSidebar = ({ file, meta, onUpdateMeta, onClose }: { file: LoraFile, met
                 </div>
             </div>
 
-            <div style={{ padding: '1rem', borderTop: '1px solid var(--border-color)', background: 'var(--bg-secondary)' }}>
+            <div style={{ padding: '1rem', borderTop: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <button
-                    onClick={() => {
-                        const text = allSuggestions.map(w => includeLoraPrefix ? `${loraPrefix}, ${w}` : w).join('\n');
-                        navigator.clipboard.writeText(text);
-                    }}
+                    onClick={handleCopySelected}
                     style={{ width: '100%', padding: '10px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
-                    Copy All {includeLoraPrefix ? `with Strength ${strength}` : 'Tags'}
+                    Copy Selected Prompt ({selectedTags.length})
                 </button>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
+                    {includeLoraPrefix ? 'LoRA prefix included once' : 'No LoRA prefix'}
+                </div>
             </div>
         </div>
     );
@@ -544,7 +592,7 @@ const formatSize = (bytes?: number) => {
     return mib.toFixed(2) + ' MiB';
 };
 
-const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowDescription, onToggleFav, onDelete, scale = 1, showPath = false, isSelected = false, onToggleSelect }: { file: LoraFile, meta: any, favLists?: string[], onUpdateMeta: (newMeta: any) => void, onShowTags: () => void, onShowDescription: () => void, onToggleFav: (file: LoraFile, list: string) => void, onDelete: () => void, scale?: number, showPath?: boolean, isSelected?: boolean, onToggleSelect?: () => void }) => {
+const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowDescription, onToggleFav, onDelete, scale = 1, showPath = false, isSelected = false, onToggleSelect, selectedCount = 0 }: { file: LoraFile, meta: any, favLists?: string[], onUpdateMeta: (newMeta: any) => void, onShowTags: () => void, onShowDescription: () => void, onToggleFav: (file: LoraFile, list: string) => void, onDelete: () => void, scale?: number, showPath?: boolean, isSelected?: boolean, onToggleSelect?: () => void, selectedCount?: number }) => {
     const [activeImgIdx, setActiveImgIdx] = useState(0);
     const [triggerWords, setTriggerWords] = useState(meta?.triggerWords || '');
     const [civitaiUrl, setCivitaiUrl] = useState(meta?.civitaiUrl || file.civitaiUrl || '');
@@ -640,6 +688,9 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
             draggable
             onDragStart={(e) => {
                 e.dataTransfer.setData('sourcePath', file.path);
+                if (isSelected && selectedCount > 1) {
+                    e.dataTransfer.setData('isBulk', 'true');
+                }
                 e.dataTransfer.effectAllowed = 'move';
             }}
         >
@@ -961,6 +1012,9 @@ export const LoraManager = () => {
     const [favLists, setFavLists] = useState<string[]>([]);
     const [selectedFavList, setSelectedFavList] = useState<string | null>(null);
     const [hoveredList, setHoveredList] = useState<string | null>(null);
+    const [isGrouped, setIsGrouped] = useState(true);
+
+    const loraContainerRef = React.useRef<HTMLDivElement>(null);
 
     // Config State
     const [configDir, setConfigDir] = useState('');
@@ -1099,18 +1153,17 @@ export const LoraManager = () => {
         }
     };
 
-    const handleReorder = async (draggedPath: string, targetPath: string) => {
+    const handleReorder = async (draggedPath: string, targetPath: string, isBulk: boolean = false) => {
         if (isSamePath(draggedPath, targetPath) || isReordering) return;
 
         setIsReordering(true);
         try {
-            // Find parent directory of the items
             const getParent = (p: string) => p.includes('/') ? p.substring(0, p.lastIndexOf('/')) : (p.includes('\\') ? p.substring(0, p.lastIndexOf('\\')) : '');
             const parent = getParent(draggedPath);
             const targetParent = getParent(targetPath);
 
-            // Only allow reordering within the same folder
             if (parent !== targetParent) {
+                console.warn('Cannot reorder across folders');
                 setIsReordering(false);
                 return;
             }
@@ -1119,7 +1172,6 @@ export const LoraManager = () => {
             const siblings = parentNode?.children || files;
             const filesToReorder = siblings.filter(f => f.type === 'file');
 
-            // Find current UI order
             const sortedInFolder = [...filesToReorder].sort((a, b) => {
                 const orderA = getMetaValue(a.path)?.order ?? 9999;
                 const orderB = getMetaValue(b.path)?.order ?? 9999;
@@ -1127,19 +1179,41 @@ export const LoraManager = () => {
                 return a.name.localeCompare(b.name);
             });
 
-            const draggedIndex = sortedInFolder.findIndex(f => isSamePath(f.path, draggedPath));
-            const targetIndex = sortedInFolder.findIndex(f => isSamePath(f.path, targetPath));
+            const newFiles = [...sortedInFolder];
 
-            if (draggedIndex === -1 || targetIndex === -1) {
-                console.error('Paths not found in current folder:', { draggedPath, targetPath, count: sortedInFolder.length });
-                return;
+            if (isBulk && selectedPaths.includes(draggedPath)) {
+                // Bulk Reorder
+                const itemsToMove = sortedInFolder.filter(f => selectedPaths.includes(f.path));
+                const remainingItems = sortedInFolder.filter(f => !selectedPaths.includes(f.path));
+
+                const targetIndexInRemaining = remainingItems.findIndex(f => isSamePath(f.path, targetPath));
+                if (targetIndexInRemaining === -1) { // Target itself was selected?
+                    // If target is selected, it's already in itemsToMove.
+                    // This case is tricky, but let's just use the original index of the target
+                    const originalTargetIndex = sortedInFolder.findIndex(f => isSamePath(f.path, targetPath));
+                    newFiles.length = 0;
+                    // Simplified: just move them to where the target was
+                    const before = sortedInFolder.filter(f => !selectedPaths.includes(f.path));
+                    const targetIdx = before.findIndex(f => sortedInFolder.indexOf(f) > originalTargetIndex);
+                    const actualInsertIdx = targetIdx === -1 ? before.length : targetIdx;
+                    before.splice(actualInsertIdx, 0, ...itemsToMove);
+                    newFiles.push(...before);
+                } else {
+                    remainingItems.splice(targetIndexInRemaining, 0, ...itemsToMove);
+                    newFiles.length = 0;
+                    newFiles.push(...remainingItems);
+                }
+            } else {
+                // Single Reorder
+                const draggedIndex = newFiles.findIndex(f => isSamePath(f.path, draggedPath));
+                const targetIndex = newFiles.findIndex(f => isSamePath(f.path, targetPath));
+                if (draggedIndex !== -1 && targetIndex !== -1) {
+                    const [removed] = newFiles.splice(draggedIndex, 1);
+                    newFiles.splice(targetIndex, 0, removed);
+                }
             }
 
-            const newFiles = [...sortedInFolder];
-            const [removed] = newFiles.splice(draggedIndex, 1);
-            newFiles.splice(targetIndex, 0, removed);
-
-            // 1. Optimistic Update: Update local state immediately for snappy UI
+            // 1. Optimistic Update
             const newMeta = { ...meta };
             const updates = newFiles.map((f, index) => {
                 const normPath = normalizePath(f.path);
@@ -1148,17 +1222,16 @@ export const LoraManager = () => {
             });
             setMeta(newMeta);
 
-            // 2. Persist to server
+            // 2. Persist
             const response = await updateLoraMetaBatch(updates);
-            if (response.success && response.meta) {
-                setMeta(response.meta); // Sync with server result
+            if (response.success) {
+                if (isBulk) setSelectedPaths([]); // Clear selection after bulk move
             }
 
-            // Also refresh file tree if needed
             await fetchData();
         } catch (e) {
             console.error('Failed to update order', e);
-            fetchData(); // Rollback on error
+            fetchData();
         } finally {
             setIsReordering(false);
         }
@@ -1205,11 +1278,11 @@ export const LoraManager = () => {
         return Object.values(sets).filter(s => s.length > 1);
     };
 
-    const handleShowDescription = async (file: LoraFile) => {
+    const handleShowDescription = async (file: LoraFile, refresh: boolean = false) => {
         setSelectedLoraForDescription(file);
-        setFetchedDescription(null);
+        if (!refresh) setFetchedDescription(null);
 
-        // Try to get modelId from meta, fallback to file.modelId
+        // Try to get modelId
         let modelId: string | number | undefined = file.modelId;
         const fileMeta = getMetaValue(file.path);
         if (fileMeta?.civitaiUrl) {
@@ -1220,13 +1293,13 @@ export const LoraManager = () => {
         if (modelId) {
             setLoadingDescription(true);
             try {
-                // Add refresh=true to bypass server cache for now
-                const res = await api.get(`/loras/model-description?modelId=${modelId}&refresh=true`);
+                const res = await api.get(`/loras/model-description?modelId=${modelId}&loraPath=${encodeURIComponent(file.path)}${refresh ? '&refresh=true' : ''}`);
                 if (res.data.description) {
                     setFetchedDescription(res.data.description);
                 }
             } catch (err) {
                 console.error("Failed to fetch description", err);
+                if (refresh) alert("failed to update from Civitai. The model might have been deleted.");
             } finally {
                 setLoadingDescription(false);
             }
@@ -1295,6 +1368,31 @@ export const LoraManager = () => {
             groupedFiles[path].push(f);
         });
     }
+
+    const gridComponents = useMemo(() => ({
+        List: React.forwardRef(({ style, children, ...props }: any, ref) => (
+            <div
+                ref={ref}
+                {...props}
+                style={{
+                    ...style,
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(auto-fill, minmax(${200 * cardScale}px, 1fr))`,
+                    gap: '1.5rem',
+                    padding: '1rem'
+                }}
+            >
+                {children}
+            </div>
+        )),
+        Item: ({ children, ...props }: any) => (
+            <div {...props}>
+                {children}
+            </div>
+        )
+    }), [cardScale]);
+
+    const flatFiles = useMemo(() => sortedFiles.filter(f => f.type === 'file'), [sortedFiles]);
 
     return (
         <div className="layout" style={{ height: '100%', display: 'flex', position: 'relative' }}>
@@ -1471,7 +1569,7 @@ export const LoraManager = () => {
                 </div>
             </aside>
 
-            <main className="main-content" style={{ flex: 1, overflowY: 'auto' }}>
+            <main className="main-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>
@@ -1555,6 +1653,18 @@ export const LoraManager = () => {
                             >
                                 <Globe size={14} /> すべて表示
                             </button>
+                            <button
+                                onClick={() => setIsGrouped(!isGrouped)}
+                                style={{
+                                    display: 'flex', alignItems: 'center', gap: '5px',
+                                    background: isGrouped ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
+                                    border: 'none', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', color: 'white',
+                                    fontSize: '0.8rem', whiteSpace: 'nowrap'
+                                }}
+                                title={isGrouped ? "フォルダ分けを解除" : "フォルダごとに表示"}
+                            >
+                                <List size={14} /> {isGrouped ? "グループ表示" : "フラット表示"}
+                            </button>
                             <div style={{ position: 'relative' }}>
                                 <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
                                 <input
@@ -1568,98 +1678,36 @@ export const LoraManager = () => {
                         </div>
                     </div>
                 </div>
-
-                {loading ? (
-                    <div>Loading...</div>
-                ) : sortedFiles.length === 0 ? (
-                    <div style={{ color: 'var(--text-secondary)' }}>No LoRA files found. Check your directory settings.</div>
-                ) : showDuplicatesOnly ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-                        {duplicateSets.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
-                                重複したファイルは見つかりませんでした。
-                            </div>
-                        ) : duplicateSets.map((set, idx) => (
-                            <div key={idx} className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                                <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <Copy size={18} /> 重複セット {idx + 1}: {set[0].name}
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({formatSize(set[0].size)})</span>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '0 2rem 2rem 2rem' }} ref={loraContainerRef}>
+                    {loading ? (
+                        <div>Loading...</div>
+                    ) : sortedFiles.length === 0 ? (
+                        <div style={{ color: 'var(--text-secondary)' }}>No LoRA files found. Check your directory settings.</div>
+                    ) : showDuplicatesOnly ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+                            {duplicateSets.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
+                                    重複したファイルは見つかりませんでした。
+                                </div>
+                            ) : duplicateSets.map((set, idx) => (
+                                <div key={idx} className="glass-panel" style={{ padding: '1.5rem', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                                    <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ fontWeight: 'bold', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <Copy size={18} /> 重複セット {idx + 1}: {set[0].name}
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 'normal' }}>({formatSize(set[0].size)})</span>
+                                        </div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                            同じ内容のファイルが {set.length} 箇所に見つかりました
+                                        </div>
                                     </div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                        同じ内容のファイルが {set.length} 箇所に見つかりました
-                                    </div>
-                                </div>
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: `repeat(auto-fill, minmax(${200 * cardScale}px, 1fr))`,
-                                    gap: '1.5rem'
-                                }}>
-                                    {set.map(file => (
-                                        <LoraCard
-                                            key={file.path}
-                                            file={file}
-                                            meta={meta[file.path]}
-                                            favLists={favLists}
-                                            onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [file.path]: newMeta }))}
-                                            onShowTags={() => setSelectedLoraForTags(file)}
-                                            onShowDescription={() => handleShowDescription(file)}
-                                            onToggleFav={handleToggleLoraFav}
-                                            onDelete={handleFetchWithDelay}
-                                            scale={cardScale}
-                                            showPath={true}
-                                            isSelected={selectedPaths.includes(file.path)}
-                                            onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : includeSubfolders ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                        {Object.entries(groupedFiles).map(([folderPath, groupFiles]) => (
-                            <div key={folderPath}>
-                                <div style={{
-                                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                    padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.1)',
-                                    marginBottom: '1rem', color: 'var(--accent)', fontWeight: 'bold'
-                                }}>
-                                    <Folder size={16} /> {folderPath}
-                                    <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: 'normal' }}>({groupFiles.length} files)</span>
-                                </div>
-                                <div style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: `repeat(auto-fill, minmax(${200 * cardScale}px, 1fr))`,
-                                    gap: '1.5rem'
-                                }}>
-                                    {groupFiles.map(file => (
-                                        <div
-                                            key={file.path}
-                                            onDragOver={sortMode === 'custom' ? (e) => {
-                                                e.preventDefault();
-                                                e.currentTarget.style.opacity = '1';
-                                                e.currentTarget.style.border = '2px solid var(--accent)';
-                                                e.currentTarget.style.borderRadius = '8px';
-                                            } : undefined}
-                                            onDragLeave={(e) => {
-                                                e.currentTarget.style.opacity = '1';
-                                                e.currentTarget.style.border = '2px solid transparent';
-                                            }}
-                                            onDrop={(e) => {
-                                                if (sortMode !== 'custom') return;
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                e.currentTarget.style.opacity = '1';
-                                                e.currentTarget.style.border = '2px solid transparent';
-                                                const sourcePath = e.dataTransfer.getData('sourcePath');
-                                                if (sourcePath && !isSamePath(sourcePath, file.path)) {
-                                                    handleReorder(sourcePath, file.path);
-                                                }
-                                            }}
-                                            style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
-                                        >
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: `repeat(auto-fill, minmax(${200 * cardScale}px, 1fr))`,
+                                        gap: '1.5rem'
+                                    }}>
+                                        {set.map(file => (
                                             <LoraCard
+                                                key={file.path}
                                                 file={file}
                                                 meta={meta[file.path]}
                                                 favLists={favLists}
@@ -1669,66 +1717,135 @@ export const LoraManager = () => {
                                                 onToggleFav={handleToggleLoraFav}
                                                 onDelete={handleFetchWithDelay}
                                                 scale={cardScale}
-                                                showPath={false} // Path is shown in header now
+                                                showPath={true}
                                                 isSelected={selectedPaths.includes(file.path)}
                                                 onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
                                             />
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: `repeat(auto-fill, minmax(${200 * cardScale}px, 1fr))`,
-                        gap: '1.5rem'
-                    }}>
-                        {sortedFiles.filter(f => f.type === 'file').map(file => (
-                            <div
-                                key={file.path}
-                                onDragOver={sortMode === 'custom' ? (e) => {
-                                    e.preventDefault();
-                                    e.currentTarget.style.opacity = '1';
-                                    e.currentTarget.style.border = '2px solid var(--accent)';
-                                    e.currentTarget.style.borderRadius = '8px';
-                                } : undefined}
-                                onDragLeave={(e) => {
-                                    e.currentTarget.style.opacity = '1';
-                                    e.currentTarget.style.border = '2px solid transparent';
-                                }}
-                                onDrop={(e) => {
-                                    if (sortMode !== 'custom') return;
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    e.currentTarget.style.opacity = '1';
-                                    e.currentTarget.style.border = '2px solid transparent';
-                                    const sourcePath = e.dataTransfer.getData('sourcePath');
-                                    if (sourcePath && !isSamePath(sourcePath, file.path)) {
-                                        handleReorder(sourcePath, file.path);
-                                    }
-                                }}
-                                style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
-                            >
-                                <LoraCard
-                                    file={file}
-                                    meta={meta[file.path]}
-                                    favLists={favLists}
-                                    onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [file.path]: newMeta }))}
-                                    onShowTags={() => setSelectedLoraForTags(file)}
-                                    onShowDescription={() => handleShowDescription(file)}
-                                    onToggleFav={handleToggleLoraFav}
-                                    onDelete={handleFetchWithDelay}
-                                    scale={cardScale}
-                                    showPath={includeSubfolders}
-                                    isSelected={selectedPaths.includes(file.path)}
-                                    onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    ) : (includeSubfolders && isGrouped) ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                            {Object.entries(groupedFiles).map(([folderPath, groupFiles]) => (
+                                <div key={folderPath}>
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                        padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                        marginBottom: '1rem', color: 'var(--accent)', fontWeight: 'bold'
+                                    }}>
+                                        <Folder size={16} /> {folderPath}
+                                        <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: 'normal' }}>({groupFiles.length} files)</span>
+                                    </div>
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: `repeat(auto-fill, minmax(${200 * cardScale}px, 1fr))`,
+                                        gap: '1.5rem'
+                                    }}>
+                                        {groupFiles.map(file => (
+                                            <div
+                                                key={file.path}
+                                                onDragOver={sortMode === 'custom' ? (e) => {
+                                                    e.preventDefault();
+                                                    e.currentTarget.style.opacity = '1';
+                                                    e.currentTarget.style.border = '2px solid var(--accent)';
+                                                    e.currentTarget.style.borderRadius = '8px';
+                                                } : undefined}
+                                                onDragLeave={(e) => {
+                                                    e.currentTarget.style.opacity = '1';
+                                                    e.currentTarget.style.border = '2px solid transparent';
+                                                }}
+                                                onDrop={(e) => {
+                                                    if (sortMode !== 'custom') return;
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    e.currentTarget.style.opacity = '1';
+                                                    e.currentTarget.style.border = '2px solid transparent';
+                                                    const sourcePath = e.dataTransfer.getData('sourcePath');
+                                                    const isBulk = e.dataTransfer.getData('isBulk') === 'true';
+                                                    if (sourcePath && !isSamePath(sourcePath, file.path)) {
+                                                        handleReorder(sourcePath, file.path, isBulk);
+                                                    }
+                                                }}
+                                                style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
+                                            >
+                                                <LoraCard
+                                                    file={file}
+                                                    meta={meta[file.path]}
+                                                    favLists={favLists}
+                                                    onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [file.path]: newMeta }))}
+                                                    onShowTags={() => setSelectedLoraForTags(file)}
+                                                    onShowDescription={() => handleShowDescription(file)}
+                                                    onToggleFav={handleToggleLoraFav}
+                                                    onDelete={handleFetchWithDelay}
+                                                    scale={cardScale}
+                                                    showPath={false} // Path is shown in header now
+                                                    isSelected={selectedPaths.includes(file.path)}
+                                                    onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <VirtuosoGrid
+                            style={{ height: '100%' }}
+                            customScrollParent={loraContainerRef.current || undefined}
+                            totalCount={flatFiles.length}
+                            components={gridComponents}
+                            itemContent={(index) => {
+                                const file = flatFiles[index];
+                                if (!file) return null;
+                                return (
+                                    <div
+                                        onDragOver={sortMode === 'custom' ? (e) => {
+                                            e.preventDefault();
+                                            e.currentTarget.style.opacity = '1';
+                                            e.currentTarget.style.border = '2px solid var(--accent)';
+                                            e.currentTarget.style.borderRadius = '8px';
+                                        } : undefined}
+                                        onDragLeave={(e) => {
+                                            e.currentTarget.style.opacity = '1';
+                                            e.currentTarget.style.border = '2px solid transparent';
+                                        }}
+                                        onDrop={(e) => {
+                                            if (sortMode !== 'custom') return;
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            e.currentTarget.style.opacity = '1';
+                                            e.currentTarget.style.border = '2px solid transparent';
+                                            const sourcePath = e.dataTransfer.getData('sourcePath');
+                                            const isBulk = e.dataTransfer.getData('isBulk') === 'true';
+                                            if (sourcePath && !isSamePath(sourcePath, file.path)) {
+                                                handleReorder(sourcePath, file.path, isBulk);
+                                            }
+                                        }}
+                                        style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
+                                    >
+                                        <LoraCard
+                                            file={file}
+                                            meta={meta[file.path]}
+                                            favLists={favLists}
+                                            onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [file.path]: newMeta }))}
+                                            onShowTags={() => setSelectedLoraForTags(file)}
+                                            onShowDescription={() => handleShowDescription(file)}
+                                            onToggleFav={handleToggleLoraFav}
+                                            onDelete={handleFetchWithDelay}
+                                            scale={cardScale}
+                                            showPath={includeSubfolders}
+                                            isSelected={selectedPaths.includes(file.path)}
+                                            selectedCount={selectedPaths.length}
+                                            onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
+                                        />
+                                    </div>
+                                );
+                            }}
+                        />
+                    )}
+                </div>
             </main>
 
             {/* Description Modal */}
@@ -1754,16 +1871,29 @@ export const LoraManager = () => {
                                 <Info color="var(--accent)" /> モデルの説明
                                 {selectedLoraForDescription?.modelId && <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>(ID: {selectedLoraForDescription.modelId})</span>}
                             </div>
-                            {(selectedLoraForDescription?.civitaiUrl || meta[selectedLoraForDescription?.path || '']?.civitaiUrl) && (
-                                <a
-                                    href={meta[selectedLoraForDescription?.path || '']?.civitaiUrl || selectedLoraForDescription?.civitaiUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{ fontSize: '0.8rem', color: 'var(--accent)', marginLeft: 'auto', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                            <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <button
+                                    onClick={() => handleShowDescription(selectedLoraForDescription, true)}
+                                    disabled={loadingDescription}
+                                    style={{
+                                        background: 'rgba(255,255,255,0.1)', border: 'none', color: 'white',
+                                        padding: '4px 12px', borderRadius: '4px', cursor: 'pointer',
+                                        fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px'
+                                    }}
                                 >
-                                    <Globe size={14} /> Civitaiで見る
-                                </a>
-                            )}
+                                    <RefreshCw size={14} className={loadingDescription ? 'spin' : ''} /> 最新版を確認
+                                </button>
+                                {(selectedLoraForDescription?.civitaiUrl || meta[selectedLoraForDescription?.path || '']?.civitaiUrl) && (
+                                    <a
+                                        href={meta[selectedLoraForDescription?.path || '']?.civitaiUrl || selectedLoraForDescription?.civitaiUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ fontSize: '0.8rem', color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                    >
+                                        <Globe size={14} /> Civitaiで見る
+                                    </a>
+                                )}
+                            </div>
                         </h2>
                         <div
                             className="description-content"

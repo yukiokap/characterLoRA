@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { CharacterManager } from './features/CharacterManager';
 import { LoraManager } from './features/LoraManager';
+import { WildcardManager } from './features/WildcardManager';
 import { PromptGenerator } from './features/PromptGenerator';
-import { Users, Database, Sparkles } from 'lucide-react';
+import { TagComposer } from './features/TagComposer';
+import { Users, Database, Sparkles, Tags, FileText } from 'lucide-react';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'characters' | 'loras' | 'batch'>('characters');
+  const [activeTab, setActiveTab] = useState<'characters' | 'loras' | 'wildcards' | 'batch' | 'composer'>('characters');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg-primary)', color: 'white' }}>
@@ -47,6 +49,19 @@ function App() {
         </button>
 
         <button
+          onClick={() => setActiveTab('wildcards')}
+          style={{
+            background: 'transparent', border: 'none',
+            color: activeTab === 'wildcards' ? 'var(--accent)' : 'var(--text-secondary)',
+            fontWeight: activeTab === 'wildcards' ? 600 : 400,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
+            height: '100%', borderBottom: activeTab === 'wildcards' ? '2px solid var(--accent)' : '2px solid transparent'
+          }}
+        >
+          <FileText size={18} /> Wildcards
+        </button>
+
+        <button
           onClick={() => setActiveTab('batch')}
           style={{
             background: 'transparent', border: 'none',
@@ -58,6 +73,19 @@ function App() {
         >
           <Sparkles size={18} /> Batch Generation
         </button>
+
+        <button
+          onClick={() => setActiveTab('composer')}
+          style={{
+            background: 'transparent', border: 'none',
+            color: activeTab === 'composer' ? 'var(--accent)' : 'var(--text-secondary)',
+            fontWeight: activeTab === 'composer' ? 600 : 400,
+            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
+            height: '100%', borderBottom: activeTab === 'composer' ? '2px solid var(--accent)' : '2px solid transparent'
+          }}
+        >
+          <Tags size={18} /> Tag Composer
+        </button>
       </header>
 
       {/* Content Area */}
@@ -68,8 +96,14 @@ function App() {
         <div style={{ display: activeTab === 'loras' ? 'contents' : 'none' }}>
           <LoraManager />
         </div>
+        <div style={{ display: activeTab === 'wildcards' ? 'contents' : 'none' }}>
+          <WildcardManager />
+        </div>
         <div style={{ display: activeTab === 'batch' ? 'contents' : 'none' }}>
           <PromptGenerator />
+        </div>
+        <div style={{ display: activeTab === 'composer' ? 'contents' : 'none' }}>
+          <TagComposer />
         </div>
       </div>
     </div>

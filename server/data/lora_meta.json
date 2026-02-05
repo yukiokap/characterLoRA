@@ -179,29 +179,17 @@
   "434/ToiletGirls_IL_V1.safetensors": {
     "order": 48
   },
-  "character/anime/gundam_gquuuuuux_shiiko_sugai.safetensors": {
-    "order": 0
-  },
   "character/anime/C-Control_Mashu_IlluXL.safetensors": {
     "order": 4
   },
   "character/anime/curezukyuun_Illust_v1.safetensors": {
     "order": 5
   },
-  "character/anime/deuxmurasameillv3.1.safetensors": {
-    "order": 1
-  },
-  "character/anime/GQuX-amate_yuzuriha_XL(ill)v10.safetensors": {
-    "order": 2
-  },
   "character/anime/Kinomoto Illustrious.safetensors": {
     "order": 6
   },
   "character/anime/Kisaki Eri IL V2.safetensors": {
     "order": 7
-  },
-  "character/anime/kp_DeuxMurasameGundamGQIllustrious_v1_1.safetensors": {
-    "order": 8
   },
   "character/anime/Lalah_Sune_-_100percent_-_manga02.safetensors": {
     "order": 9
@@ -223,9 +211,6 @@
   },
   "character/anime/sailor_venus_animaginexl_v2.safetensors": {
     "order": 15
-  },
-  "character/anime/Shiiko_Sugai.safetensors": {
-    "order": 16
   },
   "character/anime/Vani_Kanchana_-_Gundam_GquuuuuuX_ILXL.safetensors": {
     "order": 17
@@ -452,7 +437,8 @@
   },
   "character/geme/DQ/dqh2_meena_v01.safetensors": {
     "triggerWords": "",
-    "civitaiUrl": ""
+    "civitaiUrl": "",
+    "order": 15
   },
   "character/geme/その他/Amazon.safetensors": {
     "customTags": [
@@ -494,5 +480,298 @@
       "Misc",
       "お気に入り"
     ]
+  },
+  "LoRA/sex/hundjob/Condom_on_mouth.safetensors": {
+    "triggerWords": "",
+    "civitaiUrl": "",
+    "customTags": [
+      "<lora:Condom_on_mouth:0.7>  Condom on mouth, solo,  simple background,white background , closed mouth, lips,  looking at viewer,",
+      "POV,  <lora:Condom_on_mouth:0.8>  1girl,Condom on mouth,  hetero,penis,  oral,1boy,  fellatio,  green Condom on penis,  testicles,  half-closed eyes, looking to the side, pov,  uncensored,  putting on a condom with the mouth,  hand-and-mouth condom application,  she precisely fits the condom in place With only two fingers,",
+      "<lora:Condom_on_mouth:0.7>Condom_on_mouth,adjusting Condom,  penis,  hetero,from side,  (A green condom is on the penis),  1girl,1boy,  uncensored,  oral, sweatdrop, heavy breathing,  veins,  putting on a condom with the mouth,  hand-and-mouth condom application,blush, closed eyes,  she precisely fits the condom in place With only two fingers,"
+    ],
+    "tagImages": {
+      "<lora:Condom_on_mouth:0.7>  Condom on mouth, solo,  simple background,white background , closed mouth, lips,  looking at viewer,": "LoRA/sex/hundjob/.tag_images/Condom_on_mouth_cc479e9a0acf.jpg",
+      "POV,  <lora:Condom_on_mouth:0.8>  1girl,Condom on mouth,  hetero,penis,  oral,1boy,  fellatio,  green Condom on penis,  testicles,  half-closed eyes, looking to the side, pov,  uncensored,  putting on a condom with the mouth,  hand-and-mouth condom application,  she precisely fits the condom in place With only two fingers,": "LoRA/sex/hundjob/.tag_images/Condom_on_mouth_9223f8f65b24.jpg",
+      "<lora:Condom_on_mouth:0.7>Condom_on_mouth,adjusting Condom,  penis,  hetero,from side,  (A green condom is on the penis),  1girl,1boy,  uncensored,  oral, sweatdrop, heavy breathing,  veins,  putting on a condom with the mouth,  hand-and-mouth condom application,blush, closed eyes,  she precisely fits the condom in place With only two fingers,": "LoRA/sex/hundjob/.tag_images/Condom_on_mouth_3124291641a7.jpg"
+    }
+  },
+  "LoRA/434/XXX_GangBang_IL_V1.safetensors": {
+    "favoriteLists": [
+      "Misc"
+    ]
+  },
+  "LoRA/tool/sound_effects.safetensors": {
+    "favoriteLists": [
+      "Misc",
+      "お気に入り"
+    ]
+  },
+  "character/persona/dqpom-illu-nvwls-v1.safetensors": {
+    "order": 0
+  },
+  "character/persona/p3aigis-ill.safetensors": {
+    "order": 1
+  },
+  "character/persona/Lavenza_ILLUS_c.safetensors": {
+    "order": 2
+  },
+  "character/persona/p3chidori-ill.safetensors": {
+    "order": 3
+  },
+  "character/persona/p3chihiro-ill.safetensors": {
+    "order": 4
+  },
+  "character/persona/p3elizabeth-ill.safetensors": {
+    "order": 5
+  },
+  "character/persona/p3fuuka-illV2.safetensors": {
+    "order": 6
+  },
+  "character/persona/p3kotone-ill.safetensors": {
+    "order": 7
+  },
+  "character/persona/p3mitsuru-illV2.safetensors": {
+    "order": 8
+  },
+  "character/persona/p3natsuki-ill.safetensors": {
+    "order": 9
+  },
+  "character/persona/p3toriumi-ill.safetensors": {
+    "order": 10
+  },
+  "character/persona/p3yukari-ill.safetensors": {
+    "order": 11
+  },
+  "character/persona/p3yuko-ill.safetensors": {
+    "order": 12
+  },
+  "character/persona/p4aika-ill.safetensors": {
+    "order": 13
+  },
+  "character/persona/p4ayane-ill.safetensors": {
+    "order": 14
+  },
+  "character/persona/p4chie-ill-V2.safetensors": {
+    "order": 15
+  },
+  "character/persona/p4ebihara-ill.safetensors": {
+    "order": 16
+  },
+  "character/persona/p4kashiwagi-ill.safetensors": {
+    "order": 17
+  },
+  "character/persona/p4margaret-ill.safetensors": {
+    "order": 18
+  },
+  "character/persona/p4marie-ill.safetensors": {
+    "order": 19
+  },
+  "character/persona/p4naoto-illV2.safetensors": {
+    "order": 20
+  },
+  "character/persona/p4rise-illV3.safetensors": {
+    "order": 21
+  },
+  "character/persona/p4yukiko-ill-V2.safetensors": {
+    "order": 22
+  },
+  "character/persona/p4yukiko-ill-V3.safetensors": {
+    "order": 23
+  },
+  "character/persona/p4yumi-ill.safetensors": {
+    "order": 24
+  },
+  "character/persona/p5annV4-ill.safetensors": {
+    "order": 25
+  },
+  "character/persona/p5chihaya-ill.safetensors": {
+    "order": 26
+  },
+  "character/persona/p5futaba-ill.safetensors": {
+    "order": 27
+  },
+  "character/persona/p5haru-illV2.safetensors": {
+    "order": 28
+  },
+  "character/persona/p5hifumi-illV2.safetensors": {
+    "order": 29
+  },
+  "character/persona/p5kawakami-ill.safetensors": {
+    "order": 30
+  },
+  "character/persona/p5makoto-illV3-cool.safetensors": {
+    "order": 31
+  },
+  "character/persona/p5ohya-ill.safetensors": {
+    "order": 32
+  },
+  "character/persona/p5sae-ill.safetensors": {
+    "order": 33
+  },
+  "character/persona/p5shiho-ill.safetensors": {
+    "order": 34
+  },
+  "character/persona/p5tae-ill.safetensors": {
+    "order": 35
+  },
+  "character/persona/p5yoshizawa-ill.safetensors": {
+    "order": 36
+  },
+  "character/persona/p5yoshizawa-illV2.safetensors": {
+    "order": 37
+  },
+  "character/geme/DQ/anlucia_dqx.safetensors": {
+    "order": 23
+  },
+  "character/geme/DQ/Barbara.safetensors": {
+    "order": 21
+  },
+  "character/geme/DQ/Daisy.safetensors": {
+    "order": 44
+  },
+  "character/geme/DQ/dq3fighter-pdxl-nvwls-v1.safetensors": {
+    "order": 6
+  },
+  "character/geme/DQ/dq4_sofia_v01.safetensors": {
+    "order": 12
+  },
+  "character/geme/DQ/dqbianca-illu-nvwls-v1.safetensors": {
+    "order": 17
+  },
+  "character/geme/DQ/dqdebora-illu-nvwls-v1 (1).safetensors": {
+    "order": 18
+  },
+  "character/geme/DQ/dqflora-illu-nvwls-v1.safetensors": {
+    "order": 19
+  },
+  "character/geme/DQ/dqh2_alena_v01.safetensors": {
+    "order": 13
+  },
+  "character/geme/DQ/dqh2_aurora_v02.safetensors": {
+    "order": 30
+  },
+  "character/geme/DQ/dqh2_maya_v01.safetensors": {
+    "order": 14
+  },
+  "character/geme/DQ/dqlaura-illu-nvwls-v1.safetensors": {
+    "order": 0
+  },
+  "character/geme/DQ/dqmaribel-illu-nvwls-v1.safetensors": {
+    "order": 24
+  },
+  "character/geme/DQ/dqpom-illu-nvwls-v1.safetensors": {
+    "order": 1
+  },
+  "character/geme/DQ/dqsoldier-illu-nvwls-v1 (1).safetensors": {
+    "order": 11
+  },
+  "character/geme/DQ/Female_Builder.safetensors": {
+    "order": 43
+  },
+  "character/geme/DQ/fosse dq7 2outfits_illustriousXL.safetensors": {
+    "order": 25
+  },
+  "character/geme/DQ/Fosse.safetensors": {
+    "order": 26
+  },
+  "character/geme/DQ/GemmaDQ-illu-bsinky-v1.safetensors": {
+    "order": 27
+  },
+  "character/geme/DQ/Heroine_Roto.safetensors": {
+    "order": 3
+  },
+  "character/geme/DQ/Heros_daughter.safetensors": {
+    "order": 20
+  },
+  "character/geme/DQ/Hoseki_DragonQuest_Jade_IllustriousXL_v1.safetensors": {
+    "order": 36
+  },
+  "character/geme/DQ/Jessica_Albert_(Character)_ILXL.safetensors": {
+    "order": 28
+  },
+  "character/geme/DQ/Jessica-DQ8-Illustrious.safetensors": {
+    "order": 29
+  },
+  "character/geme/DQ/Jester.safetensors": {
+    "order": 4
+  },
+  "character/geme/DQ/Warrior_-_Dragon_Quest_Illustrious.safetensors": {
+    "order": 10
+  },
+  "character/geme/DQ/kp_PrincessOfSamantoriaDragonQuestIllustrious_v1_0.safetensors": {
+    "order": 2
+  },
+  "character/geme/DQ/Maiyu.safetensors": {
+    "order": 31
+  },
+  "character/geme/DQ/Maya_DQXI.safetensors": {
+    "order": 37
+  },
+  "character/geme/DQ/Maya.safetensors": {
+    "order": 38
+  },
+  "character/geme/DQ/maya02.safetensors": {
+    "order": 16
+  },
+  "character/geme/DQ/Merchant_(Character)_ILXL.safetensors": {
+    "order": 5
+  },
+  "character/geme/DQ/Mireyu.safetensors": {
+    "order": 22
+  },
+  "character/geme/DQ/Ogre.safetensors": {
+    "order": 32
+  },
+  "character/geme/DQ/Priest_(Character)_ILXL.safetensors": {
+    "order": 7
+  },
+  "character/geme/DQ/Princess_Leona.safetensors": {
+    "order": 33
+  },
+  "character/geme/DQ/Rikka.safetensors": {
+    "order": 34
+  },
+  "character/geme/DQ/Sage_-_Dragon_Quest_Illustrious.safetensors": {
+    "order": 8
+  },
+  "character/geme/DQ/Serena_-_Dragon_Quest.safetensors": {
+    "order": 40
+  },
+  "character/geme/DQ/serena02.safetensors": {
+    "order": 39
+  },
+  "character/geme/DQ/Tania.safetensors": {
+    "order": 35
+  },
+  "character/geme/DQ/Thief.safetensors": {
+    "order": 9,
+    "favoriteLists": []
+  },
+  "character/geme/DQ/veronica dq11_illustriousXL.safetensors": {
+    "order": 41
+  },
+  "character/geme/DQ/Veronica-IL.safetensors": {
+    "order": 42
+  },
+  "character/geme/FF/RikkuFFXIllustriou.safetensors": {
+    "order": 39
+  },
+  "character/geme/DQ/RikkuFFXIllustriou.safetensors": {
+    "order": 37
+  },
+  "character/anime/gundam/kp_DeuxMurasameGundamGQIllustrious_v1_1.safetensors": {
+    "order": 8
+  },
+  "character/anime/gundam/Shiiko_Sugai.safetensors": {
+    "order": 16
+  },
+  "character/anime/gundam/gundam_gquuuuuux_shiiko_sugai.safetensors": {
+    "order": 0
+  },
+  "character/anime/gundam/deuxmurasameillv3.1.safetensors": {
+    "order": 1
+  },
+  "character/anime/gundam/GQuX-amate_yuzuriha_XL(ill)v10.safetensors": {
+    "order": 2
   }
 }
