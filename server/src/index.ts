@@ -447,7 +447,7 @@ app.post('/api/loras/move-batch', (req, res) => {
     res.json({ success: anySuccess });
 });
 
-const DESCRIPTION_CACHE: Record<string, string> = {};
+const DESCRIPTION_CACHE: Record<string, { description: string, images: any[] }> = {};
 
 app.get('/api/loras/model-description', async (req, res) => {
     const modelId = req.query.modelId as string;
@@ -477,12 +477,20 @@ app.get('/api/loras/model-description', async (req, res) => {
                 combinedDesc += (combinedDesc ? '<hr/>' : '') + `<h4>Version: ${v.name}</h4>` + v.description;
             }
         }
-        return res.json({ description: combinedDesc, isLocal: true });
+        const images = localInfo.modelVersions?.[0]?.images || localInfo.images || [];
+        return res.json({
+            description: combinedDesc,
+            isLocal: true,
+            images: images
+        });
     }
 
     // 2. Fallback to API/Cache
     if (DESCRIPTION_CACHE[modelId] && !req.query.refresh) {
-        return res.json({ description: DESCRIPTION_CACHE[modelId] });
+        return res.json({
+            description: DESCRIPTION_CACHE[modelId].description,
+            images: DESCRIPTION_CACHE[modelId].images
+        });
     }
 
     try {
@@ -508,8 +516,13 @@ app.get('/api/loras/model-description', async (req, res) => {
         }
 
         if (combinedDesc) {
-            DESCRIPTION_CACHE[modelId] = combinedDesc;
-            res.json({ description: combinedDesc, isLocal: false });
+            const images = response.data.modelVersions?.[0]?.images || [];
+            DESCRIPTION_CACHE[modelId] = { description: combinedDesc, images };
+            res.json({
+                description: combinedDesc,
+                isLocal: false,
+                images: images
+            });
         } else {
             res.status(404).json({ error: 'Not found' });
         }

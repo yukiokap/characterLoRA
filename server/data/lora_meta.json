@@ -29,11 +29,6 @@
     "civitaiUrl": "https://civitai.com/models/1658118",
     "order": 0
   },
-  "character/anime/deux_murasame_il.safetensors": {
-    "triggerWords": "",
-    "civitaiUrl": "https://civitai.com/models/1657884",
-    "order": 3
-  },
   "434/Bukkake_Adriana_IL_V1.safetensors": {
     "triggerWords": "",
     "civitaiUrl": "https://civitai.com/models/843783",
@@ -47,7 +42,9 @@
     "order": 2
   },
   "434/1_HoldingSwimsuit_Anime_IL_V1.safetensors": {
-    "order": 1
+    "order": 1,
+    "triggerWords": "",
+    "civitaiUrl": ""
   },
   "434/Dakimakura_Anime_IL_V1.safetensors": {
     "order": 4
@@ -60,10 +57,14 @@
     "order": 0
   },
   "434/FCHC2026_Dim64_IL_V1.safetensors": {
-    "order": 6
+    "order": 6,
+    "triggerWords": "",
+    "civitaiUrl": ""
   },
   "434/FComic1To3Page_IL_V2.safetensors": {
-    "order": 7
+    "order": 7,
+    "triggerWords": "",
+    "civitaiUrl": ""
   },
   "434/FComic_1to1000_IL_V2.safetensors": {
     "order": 8
@@ -180,40 +181,34 @@
     "order": 48
   },
   "character/anime/C-Control_Mashu_IlluXL.safetensors": {
-    "order": 4
+    "order": 0
   },
   "character/anime/curezukyuun_Illust_v1.safetensors": {
-    "order": 5
-  },
-  "character/anime/Kinomoto Illustrious.safetensors": {
-    "order": 6
-  },
-  "character/anime/Kisaki Eri IL V2.safetensors": {
-    "order": 7
-  },
-  "character/anime/Lalah_Sune_-_100percent_-_manga02.safetensors": {
-    "order": 9
-  },
-  "character/anime/mamitomoeILM.safetensors": {
     "order": 10
   },
+  "character/anime/Kinomoto Illustrious.safetensors": {
+    "order": 7
+  },
+  "character/anime/Kisaki Eri IL V2.safetensors": {
+    "order": 1
+  },
+  "character/anime/mamitomoeILM.safetensors": {
+    "order": 30
+  },
   "character/anime/MilAiDou_1_8_Illustrious_Otome_New_V1_16dim_8alpha_3batch_CAME_Cosine_Res.safetensors": {
-    "order": 11
+    "order": 2
   },
   "character/anime/Ooku_Jochu_FGO-000006.safetensors": {
-    "order": 12
+    "order": 3
   },
   "character/anime/rebecca_v1.safetensors": {
-    "order": 13
+    "order": 4
   },
   "character/anime/rikka-takarada-s1-illustriousxl-lora-nochekaiser.safetensors": {
-    "order": 14
+    "order": 37
   },
   "character/anime/sailor_venus_animaginexl_v2.safetensors": {
-    "order": 15
-  },
-  "character/anime/Vani_Kanchana_-_Gundam_GquuuuuuX_ILXL.safetensors": {
-    "order": 17
+    "order": 5
   },
   "cum/Cum_bubble_thick_cum_IL.safetensors": {
     "triggerWords": "",
@@ -429,11 +424,13 @@
     }
   },
   "character/anime/bulmaill-000004.safetensors": {
-    "favoriteLists": []
+    "favoriteLists": [],
+    "order": 60
   },
   "character/anime/checkpoint-e39_s819 (1).safetensors": {
     "triggerWords": "bulla, 1girl, solo, blue eyes, long hair, blue hair, bangs,hairband, hoop earrings, red crop top, choker, elbow gloves, fingerless gloves, midriff, navel, belt, red skirt, thighhighs,",
-    "civitaiUrl": ""
+    "civitaiUrl": "",
+    "order": 61
   },
   "character/geme/DQ/dqh2_meena_v01.safetensors": {
     "triggerWords": "",
@@ -773,5 +770,179 @@
   },
   "character/anime/gundam/GQuX-amate_yuzuriha_XL(ill)v10.safetensors": {
     "order": 2
+  },
+  "character/anime/gundam/Lalah_Sune_-_100percent_-_manga02.safetensors": {
+    "order": 9
+  },
+  "character/anime/gundam/deux_murasame_il.safetensors": {
+    "triggerWords": "",
+    "civitaiUrl": "https://civitai.com/models/1657884",
+    "order": 3
+  },
+  "character/anime/A-Bao A Qu, the Lightless Shadow illusXL v2.1.safetensors": {
+    "order": 9
+  },
+  "character/anime/Anzu_Mazaki_YGO_Duel_Monsters-000006.safetensors": {
+    "order": 42
+  },
+  "character/anime/Apprentice Illusion Magician illuXL v1.safetensors": {
+    "order": 43
+  },
+  "character/anime/arcanashadow_Illust_v1.safetensors": {
+    "order": 11
+  },
+  "character/anime/Asuka_Tenjoin_Noob_Lora.safetensors": {
+    "order": 44
+  },
+  "character/anime/Bulma__ブルマ_-_Dragon_Ball_Classic.safetensors": {
+    "order": 59
+  },
+  "character/anime/corrector yui-ill-01.safetensors": {
+    "order": 6
+  },
+  "character/anime/cure_eclair05.safetensors": {
+    "order": 12
+  },
+  "character/anime/cureanswer.safetensors": {
+    "order": 13
+  },
+  "character/anime/curearcanashadow05.safetensors": {
+    "order": 14
+  },
+  "character/anime/cureidol_v2_IL.safetensors": {
+    "order": 15
+  },
+  "character/anime/curewink_v2_IL.safetensors": {
+    "order": 17
+  },
+  "character/anime/dark_magician_girl_illust_scarxzys.safetensors": {
+    "order": 45
+  },
+  "character/anime/Dragonmaid latys illuXL v2.safetensors": {
+    "order": 46
+  },
+  "character/anime/fujiwara_chika_v2.safetensors": {
+    "order": 18
+  },
+  "character/anime/haruhi-suzumiya-s1-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 19
+  },
+  "character/anime/HighschoolOfTheDead_MiyamotoRei_IlluXL.safetensors": {
+    "order": 24
+  },
+  "character/anime/HighschoolOfTheDead_TakagiSaya_IlluXL.safetensors": {
+    "order": 25
+  },
+  "character/anime/ichika_nakano-gotoubun_no_hanayome_s2-ixl-anime-soralz.safetensors": {
+    "order": 38
+  },
+  "character/anime/itsuki_nakano-gotoubun_no_hanayome_s2-ixl-anime-soralz.safetensors": {
+    "order": 39
+  },
+  "character/anime/JN_Saeko_Busujima_Illus.safetensors": {
+    "order": 26
+  },
+  "character/anime/JN_Shizuka_Marikawa_Illus.safetensors": {
+    "order": 27
+  },
+  "character/anime/kamishiro_rio_ilxl_v1.safetensors": {
+    "order": 47
+  },
+  "character/anime/Lovely labrynth of the silver castle illuXL v2.safetensors": {
+    "order": 48
+  },
+  "character/anime/Magi Magi Magician Gal illuXL v1.1.safetensors": {
+    "order": 49
+  },
+  "character/anime/Mai_Valentine_Noob_Lora.safetensors": {
+    "order": 50
+  },
+  "character/anime/MALICE Pawn March Hare illusXL v2.safetensors": {
+    "order": 55
+  },
+  "character/anime/MALICE Pawn White Rabbit illuXL v1.safetensors": {
+    "order": 51
+  },
+  "character/anime/MALICE Queen White Binder illuXL v1.2.safetensors": {
+    "order": 56
+  },
+  "character/anime/Maou_ILXL.safetensors": {
+    "order": 29
+  },
+  "character/anime/mgrcminamirena_IL.safetensors": {
+    "order": 57
+  },
+  "character/anime/miku_nakano-gotoubun_no_hanayome_s2-ixl-anime-soralz (1).safetensors": {
+    "order": 40
+  },
+  "character/anime/mikuru-asahina-s1-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 20
+  },
+  "character/anime/nijigaoka_mashiro_illust_scarxzys.safetensors": {
+    "order": 16
+  },
+  "character/anime/nino_nakano-gotoubun_no_hanayome_s2-ixl-anime-soralz.safetensors": {
+    "order": 41
+  },
+  "character/anime/Nurse dragonmaid illuXL v1.1.safetensors": {
+    "order": 52
+  },
+  "character/anime/ruruka05.safetensors": {
+    "order": 8,
+    "alias": ""
+  },
+  "character/anime/saotome_rei_ilxl_v1.safetensors": {
+    "order": 53
+  },
+  "character/anime/akemihomuraILM.safetensors": {
+    "order": 31
+  },
+  "character/anime/kanamemadokaILM.safetensors": {
+    "order": 32
+  },
+  "character/anime/sayaka-miki-s1-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 34
+  },
+  "character/anime/SSSSGridman_ShinjouAkane_IlluXL.safetensors": {
+    "order": 35
+  },
+  "character/anime/SSSSGridman_TakaradaRikka_IlluXL.safetensors": {
+    "order": 36
+  },
+  "character/anime/Tamaki_Iroha.safetensors": {
+    "order": 33
+  },
+  "character/anime/Tearlaments rulkallos illusXL v3.safetensors": {
+    "order": 54
+  },
+  "character/anime/Witchcrafter Madame Verre illuXL v1.safetensors": {
+    "order": 58
+  },
+  "character/anime/yuki-nagato-s1-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 21
+  },
+  "character/anime/yusa_emi_XL_illustrious-noob_v1.safetensors": {
+    "order": 22
+  },
+  "character/anime/YusaEmiV12IllustriousXL.safetensors": {
+    "order": 23
+  },
+  "character/anime/ZangyaDragonballIXL.safetensors": {
+    "order": 62
+  },
+  "character/geme/DQ/dqmaam-illu-nvwls-v1.safetensors": {
+    "order": 18
+  },
+  "character/anime/gundam/Vani_Kanchana_-_Gundam_GquuuuuuX_ILXL.safetensors": {
+    "order": 8
+  },
+  "character/geme/DQ/Maam_(Character)_ILXL.safetensors": {
+    "order": 28
+  },
+  "character/anime/old/Morisawa_Yuu_-_Magical_Angel_Creamy_Mami.safetensors": {
+    "triggerWords": "",
+    "customTags": [
+      "yuu morisawa,1girl,brown eyes,blue hair,short hair,bangs,hood,short sleeves,"
+    ]
   }
 }

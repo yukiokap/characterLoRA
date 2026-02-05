@@ -10,10 +10,16 @@ const isSamePath = (p1: string, p2: string) => {
     return normalizePath(p1).toLowerCase() === normalizePath(p2).toLowerCase();
 };
 
-const FolderTreeItem = ({ item, level = 0, onSelect, currentPath, onUpdate, selectedCount = 0 }: { item: LoraFile, level?: number, onSelect: (path: string) => void, currentPath: string, onUpdate: () => void, selectedCount?: number }) => {
+const FolderTreeItem = ({ item, level = 0, onSelect, currentPath, onUpdate, selectedCount = 0, pinnedFolders = [], onTogglePin }: { item: LoraFile, level?: number, onSelect: (path: string) => void, currentPath: string, onUpdate: () => void, selectedCount?: number, pinnedFolders?: string[], onTogglePin?: (path: string) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [newName, setNewName] = useState(item.name);
+    const isPinned = pinnedFolders.includes(item.path);
+
+    const togglePin = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onTogglePin?.(item.path);
+    };
 
     if (item.type !== 'directory') return null;
 
@@ -130,6 +136,17 @@ const FolderTreeItem = ({ item, level = 0, onSelect, currentPath, onUpdate, sele
                         </button>
                     ) : (
                         <>
+                            <button
+                                onClick={togglePin}
+                                style={{
+                                    padding: '2px', background: 'transparent', border: 'none',
+                                    color: isPinned ? 'var(--accent)' : 'var(--text-secondary)',
+                                    cursor: 'pointer'
+                                }}
+                                title={isPinned ? "ピン留め解除" : "ピン留め"}
+                            >
+                                <Settings size={12} style={{ color: isPinned ? 'var(--accent)' : 'inherit' }} />
+                            </button>
                             <button onClick={handleRename} style={{ padding: '2px', background: 'transparent', border: 'none', color: 'var(--text-secondary)' }}>
                                 <Edit2 size={12} />
                             </button>
@@ -150,7 +167,8 @@ const FolderTreeItem = ({ item, level = 0, onSelect, currentPath, onUpdate, sele
                             onSelect={onSelect}
                             currentPath={currentPath}
                             onUpdate={onUpdate}
-                            selectedCount={selectedCount}
+                            pinnedFolders={pinnedFolders}
+                            onTogglePin={onTogglePin}
                         />
                     ))}
                 </div>
@@ -598,6 +616,8 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
     const [civitaiUrl, setCivitaiUrl] = useState(meta?.civitaiUrl || file.civitaiUrl || '');
     const [isEditing, setIsEditing] = useState(false);
     const [showFavMenu, setShowFavMenu] = useState(false);
+    const [isEditingAlias, setIsEditingAlias] = useState(false);
+    const [tempAlias, setTempAlias] = useState(meta?.alias || '');
     const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const defaultFav = "お気に入り";
@@ -945,8 +965,48 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
                 }}
             >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '10px' }}>
-                    <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {displayName}
+                    <div
+                        style={{
+                            fontWeight: 'bold', fontSize: '0.9rem', color: 'white',
+                            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            display: 'flex', alignItems: 'center', gap: '5px', flex: 1
+                        }}
+                    >
+                        {isEditingAlias ? (
+                            <input
+                                autoFocus
+                                value={tempAlias}
+                                onChange={e => setTempAlias(e.target.value)}
+                                onBlur={async () => {
+                                    await updateLoraMeta(file.path, { alias: tempAlias });
+                                    onUpdateMeta({ ...meta, alias: tempAlias });
+                                    setIsEditingAlias(false);
+                                }}
+                                onKeyDown={async e => {
+                                    if (e.key === 'Enter') {
+                                        await updateLoraMeta(file.path, { alias: tempAlias });
+                                        onUpdateMeta({ ...meta, alias: tempAlias });
+                                        setIsEditingAlias(false);
+                                    }
+                                }}
+                                onClick={e => e.stopPropagation()}
+                                style={{
+                                    flex: 1, background: 'rgba(255,255,255,0.1)', border: '1px solid var(--accent)',
+                                    color: 'white', fontSize: '0.8rem', padding: '1px 4px', borderRadius: '4px'
+                                }}
+                            />
+                        ) : (
+                            <>
+                                <span style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); onShowDescription(); }}>
+                                    {meta?.alias || displayName}
+                                </span>
+                                <Edit2
+                                    size={12}
+                                    style={{ opacity: 0.5, cursor: 'pointer' }}
+                                    onClick={(e) => { e.stopPropagation(); setIsEditingAlias(true); }}
+                                />
+                            </>
+                        )}
                     </div>
                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.6)', flexShrink: 0 }}>
                         {formatSize(file.size)}
@@ -1002,12 +1062,12 @@ export const LoraManager = () => {
     const [selectedLoraForDescription, setSelectedLoraForDescription] = useState<LoraFile | null>(null);
     const [fetchedDescription, setFetchedDescription] = useState<string | null>(null);
     const [loadingDescription, setLoadingDescription] = useState(false);
+    const [fetchedImages, setFetchedImages] = useState<any[]>([]);
     const [sortMode, setSortMode] = useState<'name' | 'custom'>('custom');
     const [isReordering, setIsReordering] = useState(false);
     const [cardScale, setCardScale] = useState(1);
     const [includeSubfolders, setIncludeSubfolders] = useState(false);
     const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false);
-    const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
     const [favLists, setFavLists] = useState<string[]>([]);
     const [selectedFavList, setSelectedFavList] = useState<string | null>(null);
@@ -1018,6 +1078,7 @@ export const LoraManager = () => {
 
     // Config State
     const [configDir, setConfigDir] = useState('');
+    const [pinnedFolders, setPinnedFolders] = useState<string[]>([]);
 
     const getMetaValue = (p: string) => {
         if (meta[p]) return meta[p];
@@ -1050,6 +1111,7 @@ export const LoraManager = () => {
         fetchData();
         getAppConfig().then(c => {
             if (c.loraDir) setConfigDir(c.loraDir);
+            if (c.pinnedFolders) setPinnedFolders(c.pinnedFolders);
         });
     }, []);
 
@@ -1280,7 +1342,10 @@ export const LoraManager = () => {
 
     const handleShowDescription = async (file: LoraFile, refresh: boolean = false) => {
         setSelectedLoraForDescription(file);
-        if (!refresh) setFetchedDescription(null);
+        if (!refresh) {
+            setFetchedDescription(null);
+            setFetchedImages([]);
+        }
 
         // Try to get modelId
         let modelId: string | number | undefined = file.modelId;
@@ -1296,6 +1361,9 @@ export const LoraManager = () => {
                 const res = await api.get(`/loras/model-description?modelId=${modelId}&loraPath=${encodeURIComponent(file.path)}${refresh ? '&refresh=true' : ''}`);
                 if (res.data.description) {
                     setFetchedDescription(res.data.description);
+                }
+                if (res.data.images) {
+                    setFetchedImages(res.data.images);
                 }
             } catch (err) {
                 console.error("Failed to fetch description", err);
@@ -1330,9 +1398,8 @@ export const LoraManager = () => {
     const filteredFiles = currentFiles.filter(f => {
         const fileMeta = getMetaValue(f.path);
         const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesFav = showFavoritesOnly ? fileMeta?.favorite : true;
         const matchesFavList = selectedFavList ? fileMeta?.favoriteLists?.includes(selectedFavList) : true;
-        return matchesSearch && matchesFav && matchesFavList;
+        return matchesSearch && matchesFavList;
     });
 
     const duplicateSets = showDuplicatesOnly ? findDuplicateSets(filteredFiles) : [];
@@ -1420,6 +1487,33 @@ export const LoraManager = () => {
                 )}
 
                 <div style={{ overflowY: 'auto', overflowX: 'auto', flex: 1 }}>
+                    {pinnedFolders.length > 0 && (
+                        <div style={{ marginBottom: '1.5rem' }}>
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <Settings size={12} style={{ color: 'var(--accent)' }} /> PINNED
+                            </div>
+                            {pinnedFolders.map(path => {
+                                const folderName = path.split(/[\\\/]/).pop() || path;
+                                return (
+                                    <div
+                                        key={path}
+                                        onClick={() => setCurrentPath(path)}
+                                        style={{
+                                            padding: '4px 8px', cursor: 'pointer', borderRadius: '4px',
+                                            background: isSamePath(path, currentPath) ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                                            color: isSamePath(path, currentPath) ? '#7dd3fc' : 'var(--text-secondary)',
+                                            fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px',
+                                            marginBottom: '2px'
+                                        }}
+                                    >
+                                        <Folder size={14} style={{ color: 'var(--accent)' }} />
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{folderName}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
                     <div
                         onClick={() => handleSelectFolder('')}
                         onDragOver={(e) => {
@@ -1484,6 +1578,15 @@ export const LoraManager = () => {
                             currentPath={selectedFavList ? "__FILTERED__" : currentPath}
                             onUpdate={handleFetchWithDelay}
                             selectedCount={selectedPaths.length}
+                            pinnedFolders={pinnedFolders}
+                            onTogglePin={async (path) => {
+                                const isPinned = pinnedFolders.includes(path);
+                                const newPinned = isPinned
+                                    ? pinnedFolders.filter(p => p !== path)
+                                    : [...pinnedFolders, path];
+                                await updateAppConfig({ pinnedFolders: newPinned });
+                                setPinnedFolders(newPinned);
+                            }}
                         />
                     ))}
                 </div>
@@ -1895,6 +1998,39 @@ export const LoraManager = () => {
                                 )}
                             </div>
                         </h2>
+                        {!loadingDescription && fetchedImages.length > 0 && (
+                            <div style={{ marginBottom: '1.5rem', flexShrink: 0 }}>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Sample Images (Click to copy prompt)</div>
+                                <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                                    {fetchedImages.map((img, idx) => (
+                                        <div
+                                            key={idx}
+                                            style={{
+                                                flexShrink: 0, width: '150px', position: 'relative',
+                                                borderRadius: '8px', overflow: 'hidden', cursor: 'pointer',
+                                                border: '2px solid transparent'
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                const prompt = img.meta?.prompt || '';
+                                                if (prompt) {
+                                                    navigator.clipboard.writeText(prompt);
+                                                    alert('Prompt copied!');
+                                                }
+                                            }}
+                                            title={img.meta?.prompt ? 'Click to copy generation prompt' : 'No prompt available'}
+                                        >
+                                            <img src={img.url} style={{ width: '100%', height: '150px', objectFit: 'cover' }} alt="Sample" />
+                                            {img.meta?.prompt && (
+                                                <div style={{ position: 'absolute', bottom: 0, right: 0, padding: '2px', background: 'rgba(0,0,0,0.6)' }}>
+                                                    <Copy size={12} color="white" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div
                             className="description-content"
                             style={{

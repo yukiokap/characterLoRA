@@ -2,5 +2,6 @@
   "wildcardDir": "C:\\Users\\okap0\\AppData\\Roaming\\StabilityMatrix\\Packages\\Stable Diffusion WebUI reForge\\extensions\\sd-dynamic-prompts\\wildcards",
   "loraDir": "D:\\webui\\LoRA",
   "geminiModel": "",
-  "geminiApiKey": "AIzaSyBwQxGXCIMLvMMK_yzgVpovr8LWQmEG14s"
+  "geminiApiKey": "AIzaSyBwQxGXCIMLvMMK_yzgVpovr8LWQmEG14s",
+  "pinnedFolders": []
 }

@@ -86,6 +86,7 @@ export interface LoraMeta {
         customTags?: string[];
         favoriteLists?: string[];
         tagImages?: Record<string, string>;
+        alias?: string;
     };
 }
 
@@ -95,6 +96,7 @@ export interface AppConfig {
     geminiApiKey?: string;
     geminiModel?: string;
     openaiApiKey?: string;
+    pinnedFolders?: string[];
 }
 
 export const getAppConfig = async () => {
