@@ -18,6 +18,9 @@ export const WildcardManager = () => {
     useEffect(() => {
         fetchFiles();
         fetchConfig();
+        const refreshHandler = () => fetchFiles();
+        window.addEventListener('wildcard-update', refreshHandler);
+        return () => window.removeEventListener('wildcard-update', refreshHandler);
     }, []);
 
     const fetchFiles = async () => {

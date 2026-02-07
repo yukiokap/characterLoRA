@@ -91,7 +91,7 @@ const FolderTreeItem = ({ item, level = 0, onSelect, currentPath, onUpdate, sele
                     }
                 }}
                 style={{
-                    padding: '4px', cursor: 'grab', borderRadius: '4px',
+                    padding: '4px', cursor: 'pointer', borderRadius: '4px',
                     background: isSamePath(item.path, currentPath) ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
                     color: isSamePath(item.path, currentPath) ? '#7dd3fc' : 'var(--text-secondary)',
                     display: 'flex', alignItems: 'center', gap: '5px',
@@ -737,7 +737,7 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
         <div
             className="glass-panel lora-card"
             style={{
-                display: 'flex', flexDirection: 'column', height: `${320 * scale}px`, cursor: 'grab',
+                display: 'flex', flexDirection: 'column', height: `${320 * scale}px`, cursor: 'pointer',
                 position: 'relative', overflow: 'hidden', padding: 0, border: 'none'
             }}
             draggable
@@ -1218,6 +1218,14 @@ export const LoraManager = () => {
             if (c.loraDir) setConfigDir(c.loraDir);
             if (c.pinnedFolders) setPinnedFolders(c.pinnedFolders);
         });
+
+        const refreshHandler = () => fetchData();
+        window.addEventListener('lora-update', refreshHandler);
+        window.addEventListener('character-update', refreshHandler); // Also refresh on char update just in case
+        return () => {
+            window.removeEventListener('lora-update', refreshHandler);
+            window.removeEventListener('character-update', refreshHandler);
+        };
     }, []);
 
     // Separate effect for bulk move event listener
@@ -1372,6 +1380,15 @@ export const LoraManager = () => {
 
             const previewUrl = lora.previewPath ? `http://localhost:3001/api/loras/image?path=${encodeURIComponent(lora.previewPath)}` : null;
 
+            // Ensure we have at least one variation if there's a preview image
+            if (variations.length === 0 && previewUrl) {
+                variations = [{
+                    id: `v-${Date.now()}`,
+                    name: '通常衣装',
+                    prompts: []
+                }];
+            }
+
             // Determine series from path
             const pathParts = lora.path.split('/');
             let series = '未分類';
@@ -1379,6 +1396,10 @@ export const LoraManager = () => {
                 // heuristic: usually character/series/name
                 series = pathParts[pathParts.length - 2];
             }
+
+            const loraTagName = lora.name.replace(/\.[^/.]+$/, "");
+            const loraTag = `<lora:${loraTagName}:1>`;
+            baseTags = [loraTag, ...baseTags];
 
             const payload = {
                 name,
@@ -1408,10 +1429,15 @@ export const LoraManager = () => {
         let successCount = 0;
         setBulkProgress({ current: 0, total: selectedPaths.length, name: '' });
 
+        const allFilesFlat = flattenFiles(files);
+
         for (let i = 0; i < selectedPaths.length; i++) {
             const path = selectedPaths[i];
-            const lora = files.flatMap(f => f.children || [f]).find(f => f.path === path);
-            if (!lora) continue;
+            const lora = allFilesFlat.find(f => isSamePath(f.path, path));
+            if (!lora) {
+                console.warn("LoRA not found for path:", path);
+                continue;
+            }
 
             setBulkProgress({ current: i + 1, total: selectedPaths.length, name: lora.name, isAnalyzing: false });
 
@@ -1433,8 +1459,22 @@ export const LoraManager = () => {
                 }
 
                 const previewUrl = lora.previewPath ? `http://localhost:3001/api/loras/image?path=${encodeURIComponent(lora.previewPath)}` : null;
+
+                // Ensure we have at least one variation if there's a preview image
+                if (variations.length === 0 && previewUrl) {
+                    variations = [{
+                        id: `v-${Date.now()}-${i}`,
+                        name: '通常衣装',
+                        prompts: []
+                    }];
+                }
+
                 const pathParts = lora.path.split('/');
                 let series = pathParts.length > 1 ? pathParts[pathParts.length - 2] : '未分類';
+
+                const loraTagName = lora.name.replace(/\.[^/.]+$/, "");
+                const loraTag = `<lora:${loraTagName}:1>`;
+                baseTags = [loraTag, ...baseTags];
 
                 const payload = {
                     name: meta[lora.path]?.alias || lora.name.replace(/\.[^/.]+$/, ""),

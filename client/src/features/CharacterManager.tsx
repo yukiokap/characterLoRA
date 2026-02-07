@@ -1,33 +1,33 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, forwardRef } from 'react';
 import { getCharacters, createCharacter, updateCharacter, deleteCharacter, getLists, saveLists, reorderCharacters, renameList, deleteList } from '../api';
 import { CharacterCard } from '../components/CharacterCard';
 import { CharacterForm } from '../components/CharacterForm';
-import { Search, Plus, Filter, Folder, Hash, Heart, MoreHorizontal, Copy, ZoomIn, ZoomOut, Edit2, Trash2 } from 'lucide-react';
-import type { Character } from '../types';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, rectSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { Search, Plus, Filter, Folder, Hash, Heart, Copy, ZoomIn, ZoomOut, Edit2, Trash2 } from 'lucide-react';
+import { VirtuosoGrid } from 'react-virtuoso';
+import { type Character } from '../types';
+import { arrayMove } from '@dnd-kit/sortable';
 
-const SortableCharCard = ({ char, ...props }: { char: Character } & any) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-    } = useSortable({ id: char.id });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        touchAction: 'none'
-    };
-
-    return (
-        <div ref={setNodeRef} style={style}>
-            <CharacterCard character={char} {...props} dragHandleProps={{ ...attributes, ...listeners }} />
+const gridComponents = {
+    List: forwardRef(({ style, children, ...props }: any, ref: any) => (
+        <div
+            ref={ref}
+            {...props}
+            style={{
+                ...style,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(var(--card-width, 200px), 1fr))',
+                gap: '1.5rem',
+                padding: '1rem',
+            }}
+        >
+            {children}
         </div>
-    );
+    )),
+    Item: ({ children, ...props }: any) => (
+        <div {...props} style={{ display: 'flex' }}>
+            {children}
+        </div>
+    )
 };
 
 export const CharacterManager = () => {
@@ -44,19 +44,8 @@ export const CharacterManager = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingChar, setEditingChar] = useState<Character | null>(null);
 
-    // Hover state for list items to show edit/delete buttons
     const [hoveredList, setHoveredList] = useState<string | null>(null);
-
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        })
-    );
+    const containerRef = React.useRef<HTMLDivElement>(null);
 
     const getActiveVarIndex = (charId: string) => activeVariations[charId] || 0;
 
@@ -81,6 +70,9 @@ export const CharacterManager = () => {
 
     useEffect(() => {
         fetchData();
+        const refreshHandler = () => fetchData();
+        window.addEventListener('character-update', refreshHandler);
+        return () => window.removeEventListener('character-update', refreshHandler);
     }, []);
 
     const fetchCharacters = async () => {
@@ -104,21 +96,6 @@ export const CharacterManager = () => {
             return matchesSearch && matchesSeries && matchesFav;
         });
     }, [characters, searchQuery, selectedSeries, selectedFavList]);
-
-    // If filtered, we still want to drag, but it maps to global order
-    const handleDragEnd = async (event: DragEndEvent) => {
-        const { active, over } = event;
-        if (over && active.id !== over.id) {
-            const oldIndex = characters.findIndex((c) => c.id === active.id);
-            const newIndex = characters.findIndex((c) => c.id === over.id);
-
-            if (oldIndex !== -1 && newIndex !== -1) {
-                const newOrder = arrayMove(characters, oldIndex, newIndex);
-                setCharacters(newOrder);
-                await reorderCharacters(newOrder);
-            }
-        }
-    };
 
     const handleAdd = () => {
         setEditingChar(null);
@@ -310,7 +287,7 @@ export const CharacterManager = () => {
             </aside>
 
             {/* Main Content */}
-            <main className="main-content">
+            <main className="main-content" ref={containerRef}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0 }}>
@@ -378,29 +355,69 @@ export const CharacterManager = () => {
                         <p>キャラクターが見つかりません</p>
                     </div>
                 ) : (
-                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <SortableContext items={filteredCharacters.map(c => c.id)} strategy={rectSortingStrategy}>
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: `repeat(auto-fill, minmax(${280 * cardScale}px, 1fr))`,
-                                gap: '1.5rem',
-                                paddingBottom: '4rem'
-                            }}>
-                                {filteredCharacters.map(char => (
-                                    <SortableCharCard
-                                        key={char.id}
-                                        char={char}
-                                        favLists={favLists}
-                                        activeVarIndex={getActiveVarIndex(char.id)}
-                                        onVarChange={(idx: number) => handleVarChange(char.id, idx)}
-                                        onToggleFav={toggleFavList}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDelete}
-                                    />
-                                ))}
-                            </div>
-                        </SortableContext>
-                    </DndContext>
+                    <div style={{ flex: 1, paddingBottom: '4rem', '--card-width': `${200 * cardScale}px` } as any}>
+                        <VirtuosoGrid
+                            style={{ height: '100%' }}
+                            customScrollParent={containerRef.current || undefined}
+                            totalCount={filteredCharacters.length}
+                            components={gridComponents}
+                            itemContent={(index) => {
+                                const char = filteredCharacters[index];
+                                if (!char) return null;
+                                return (
+                                    <div
+                                        draggable
+                                        onDragStart={(e) => {
+                                            e.dataTransfer.setData('charId', char.id);
+                                            e.currentTarget.style.opacity = '0.5';
+                                        }}
+                                        onDragEnd={(e) => {
+                                            e.currentTarget.style.opacity = '1';
+                                        }}
+                                        onDragOver={(e) => {
+                                            e.preventDefault();
+                                            e.currentTarget.style.border = '2px solid var(--accent)';
+                                        }}
+                                        onDragLeave={(e) => {
+                                            e.currentTarget.style.border = '2px solid transparent';
+                                        }}
+                                        onDrop={async (e) => {
+                                            e.preventDefault();
+                                            e.currentTarget.style.border = '2px solid transparent';
+                                            const draggedId = e.dataTransfer.getData('charId');
+                                            if (draggedId && draggedId !== char.id) {
+                                                const oldIndex = characters.findIndex(c => c.id === draggedId);
+                                                const newIndex = characters.findIndex(c => c.id === char.id);
+                                                if (oldIndex !== -1 && newIndex !== -1) {
+                                                    const newOrder = arrayMove([...characters], oldIndex, newIndex);
+                                                    setCharacters(newOrder);
+                                                    await reorderCharacters(newOrder);
+                                                }
+                                            }
+                                        }}
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            display: 'flex',
+                                            border: '2px solid transparent',
+                                            borderRadius: '12px',
+                                            transition: 'border 0.2s'
+                                        }}
+                                    >
+                                        <CharacterCard
+                                            character={char}
+                                            favLists={favLists}
+                                            activeVarIndex={getActiveVarIndex(char.id)}
+                                            onVarChange={(idx: number) => handleVarChange(char.id, idx)}
+                                            onToggleFav={toggleFavList}
+                                            onEdit={handleEdit}
+                                            onDelete={handleDelete}
+                                        />
+                                    </div>
+                                );
+                            }}
+                        />
+                    </div>
                 )}
 
                 {isModalOpen && (

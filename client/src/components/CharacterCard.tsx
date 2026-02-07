@@ -66,7 +66,7 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="glass-panel"
-            style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+            style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}
         >
             <div style={{ position: 'relative', background: '#000' }}>
 
