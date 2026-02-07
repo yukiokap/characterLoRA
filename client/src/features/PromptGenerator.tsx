@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getCharacters, getLists, getSituations, saveSituations } from '../api';
 import { type Character } from '../types';
-import { Sparkles, Users, Plus, Copy, Check, List, Heart, Search, X, Save, FolderOpen, Globe } from 'lucide-react';
+import { Sparkles, Users, Plus, Copy, Check, List, Heart, Search, X, Save, FolderOpen, Globe, RefreshCw } from 'lucide-react';
 
 interface GeneratorCharacter {
     id: string; // Internal unique ID for the generator list
@@ -33,6 +33,10 @@ export const PromptGenerator = () => {
     useEffect(() => {
         fetchData();
         fetchTemplates();
+
+        const handleUpdate = () => fetchData();
+        window.addEventListener('character-update', handleUpdate);
+        return () => window.removeEventListener('character-update', handleUpdate);
     }, []);
 
     const fetchData = async () => {
@@ -186,21 +190,35 @@ export const PromptGenerator = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const filteredChars = allCharacters.filter(c => {
-        const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            c.series.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesList = selectedList ? c.favoriteLists?.includes(selectedList) : true;
-        return matchesSearch && matchesList;
-    });
+    const filteredChars = useMemo(() => {
+        return allCharacters.filter(c => {
+            const name = (c.name || '').toLowerCase();
+            const series = (c.series || '').toLowerCase();
+            const query = (searchQuery || '').toLowerCase();
+
+            const matchesSearch = name.includes(query) || series.includes(query);
+            const matchesList = selectedList ? c.favoriteLists?.includes(selectedList) : true;
+            return matchesSearch && matchesList;
+        });
+    }, [allCharacters, searchQuery, selectedList]);
 
     return (
         <div className="prompt-generator" style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
             {/* Sidebar: Character Library */}
             <aside style={{ width: '320px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', background: 'rgba(15, 23, 42, 0.3)' }}>
                 <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-                    <h3 style={{ margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
-                        <Users size={20} color="var(--accent)" /> Character Library
-                    </h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
+                            <Users size={20} color="var(--accent)" /> Character Library
+                        </h3>
+                        <button
+                            onClick={fetchData}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px', display: 'flex' }}
+                            title="Refresh library"
+                        >
+                            <RefreshCw size={14} />
+                        </button>
+                    </div>
                     <div style={{ position: 'relative', marginBottom: '1rem' }}>
                         <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
                         <input
@@ -321,6 +339,11 @@ export const PromptGenerator = () => {
                             );
                         });
                     })()}
+                    {filteredChars.length === 0 && (
+                        <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.5, fontSize: '0.85rem' }}>
+                            {allCharacters.length === 0 ? 'キャラクターが登録されていません' : '一致するキャラクターが見つかりません'}
+                        </div>
+                    )}
                 </div>
             </aside>
 

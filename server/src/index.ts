@@ -6,6 +6,18 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import multer from 'multer';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+dotenv.config();
+
+// Helper to get Gemini AI instance dynamically
+function getAIInstance() {
+    const config = readConfig();
+    const apiKey = config.geminiApiKey || process.env.GEMINI_API_KEY;
+    if (!apiKey) return null;
+    return new GoogleGenerativeAI(apiKey);
+}
 
 const app = express();
 const port = 3001;
@@ -82,7 +94,15 @@ app.get('/api/characters', (req, res) => {
 
 app.post('/api/characters', (req, res) => {
     const data = JSON.parse(fs.readFileSync(CHARACTERS_FILE, 'utf8'));
-    const newChar = { ...req.body, id: uuidv4() };
+    const newChar = {
+        id: uuidv4(),
+        favoriteLists: [],
+        basePrompts: [],
+        variations: [],
+        series: '未分類',
+        notes: '',
+        ...req.body
+    };
     data.push(newChar);
     fs.writeFileSync(CHARACTERS_FILE, JSON.stringify(data, null, 2));
     res.json(newChar);
@@ -740,6 +760,78 @@ app.delete('/api/wildcards/file', (req, res) => {
         }
     }
     res.json({ success: true });
+});
+
+app.post('/api/loras/analyze-tags', async (req, res) => {
+    try {
+        console.log('AI Analysis Request received');
+        const ai = getAIInstance();
+        if (!ai) {
+            console.error('AI API Key is missing');
+            return res.status(500).json({ error: 'AI API Key not configured. Please set it in Settings.' });
+        }
+
+        let { triggerWords } = req.body;
+        // Ensure triggerWords is an array of strings
+        if (typeof triggerWords === 'string') {
+            triggerWords = triggerWords.split(',').map((t: string) => t.trim()).filter(Boolean);
+        }
+
+        if (!triggerWords || !Array.isArray(triggerWords) || triggerWords.length === 0) {
+            console.warn('No trigger words to analyze');
+            return res.json({ base: [], variations: [] });
+        }
+
+        console.log(`Analyzing ${triggerWords.length} tags...`);
+
+        const model = ai.getGenerativeModel({ model: "gemini-3-pro-preview" });
+        const prompt = `
+Task: Analyze unique trigger words of a character LoRA and split them into "Physical Features" (Base) and "Outfit Sets" (Variations).
+
+Tags to Analyze:
+"${triggerWords.join(', ')}"
+
+Rules:
+1. "physical": Core features that DONT change with clothes (e.g., hair color, eye color, body type, species, skin, character name).
+2. "variations": A list of separate outfits. 
+   - CRITICAL: If you see distinct outfit keys like "B1jouDef", "B1jouNwYrs", "Costume A", "Bikini", etc., create a NEW variation for EACH set.
+   - For each variation, give it a human-friendly "name" (e.g., "New Year Furisode") and a list of "prompts" specific to that outfit.
+   - Do NOT combine different outfits into one variation.
+
+Format:
+Return ONLY clean JSON:
+{
+  "physical": ["tag1", "tag2"],
+  "variations": [
+    {"name": "Default Outfit", "prompts": ["outfit_key1", "dress", "hat"]},
+    {"name": "Summer Style", "prompts": ["outfit_key2", "swimsuit", "sunglasses"]}
+  ]
+}
+No preamble, no code blocks, just raw JSON.`;
+
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim();
+        console.log('AI Raw Response:', text);
+
+        let jsonStr = text;
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) jsonStr = jsonMatch[0];
+
+        const parsed = JSON.parse(jsonStr);
+        console.log(`Detected ${parsed.variations?.length || 0} variations`);
+
+        res.json({
+            base: parsed.physical || [],
+            variations: (parsed.variations || []).map((v: any, idx: number) => ({
+                id: `v-${Date.now()}-${idx}`,
+                name: v.name || `衣装 ${idx + 1}`,
+                prompts: v.tags || v.prompts || []
+            }))
+        });
+    } catch (err: any) {
+        console.error('AI Analysis Error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.listen(port, '127.0.0.1', () => console.log(`Server running at http://127.0.0.1:${port}`));

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { getLoraFiles, updateLoraMeta, updateLoraMetaBatch, createLoraFolder, getAppConfig, updateAppConfig, renameLoraNode, deleteLoraNode, moveLoraNode, moveLoraNodesBatch, uploadLoraPreview, getLists, saveLists, renameList, deleteList, uploadLoraTagImage, type LoraFile, type LoraMeta, api } from '../api';
-import { Search, Folder, Settings, Heart, ChevronRight, ChevronDown, Copy, Plus, Globe, List, X, Edit2, Trash2, ZoomIn, ZoomOut, ChevronLeft, Info, RefreshCw } from 'lucide-react';
+import { ChevronRight, ChevronDown, Folder, Search, RefreshCw, X, Plus, Globe, List, Copy, Heart, UserPlus, Sparkles, Users, Info, Trash2, ChevronLeft, Settings, Edit2, ZoomIn, ZoomOut } from 'lucide-react';
 
 const normalizePath = (p: string) => p.replace(/\\/g, '/');
 
@@ -611,7 +611,7 @@ const formatSize = (bytes?: number) => {
     return mib.toFixed(2) + ' MiB';
 };
 
-const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowDescription, onToggleFav, onDelete, scale = 1, showPath = false, isSelected = false, onToggleSelect, selectedCount = 0 }: { file: LoraFile, meta: any, favLists?: string[], onUpdateMeta: (newMeta: any) => void, onShowTags: () => void, onShowDescription: () => void, onToggleFav: (file: LoraFile, list: string) => void, onDelete: () => void, scale?: number, showPath?: boolean, isSelected?: boolean, onToggleSelect?: () => void, selectedCount?: number }) => {
+const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowDescription, onToggleFav, onDelete, scale = 1, showPath = false, isSelected = false, onToggleSelect, selectedCount = 0, onRegisterCharacter }: { file: LoraFile, meta: any, favLists?: string[], onUpdateMeta: (newMeta: any) => void, onShowTags: () => void, onShowDescription: () => void, onToggleFav: (file: LoraFile, list: string) => void, onDelete: () => void, scale?: number, showPath?: boolean, isSelected?: boolean, onToggleSelect?: () => void, selectedCount?: number, onRegisterCharacter?: () => void }) => {
     const displayName = file.name.replace(/\.(safetensors|pt|ckpt)$/i, '');
     const isXL = file.name.toLowerCase().includes('xl');
     const isPony = file.name.toLowerCase().includes('pony');
@@ -835,45 +835,45 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
                         onClick={prevImg}
                         className="nav-arrow-btn"
                         style={{
-                            position: 'absolute', left: '8px', top: '60%', transform: 'translateY(-50%)',
+                            position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)',
                             background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 100%)',
                             backdropFilter: 'blur(8px)',
                             border: '2px solid rgba(255,255,255,0.2)',
-                            borderRadius: '12px',
-                            width: '44px', height: '44px',
+                            borderRadius: '10px',
+                            width: '36px', height: '36px',
                             color: 'white',
                             cursor: 'pointer',
                             pointerEvents: 'auto',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)'
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                            transition: 'all 0.2s'
                         }}
                     >
-                        <ChevronLeft size={32} strokeWidth={3} />
-                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>‹</span>
+                        <ChevronLeft size={24} strokeWidth={2.5} />
                     </button>
                     <button
                         onClick={nextImg}
                         className="nav-arrow-btn"
                         style={{
-                            position: 'absolute', right: '8px', top: '60%', transform: 'translateY(-50%)',
+                            position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
                             background: 'linear-gradient(135deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.7) 100%)',
                             backdropFilter: 'blur(8px)',
                             border: '2px solid rgba(255,255,255,0.2)',
-                            borderRadius: '12px',
-                            width: '44px', height: '44px',
+                            borderRadius: '10px',
+                            width: '36px', height: '36px',
                             color: 'white',
                             cursor: 'pointer',
                             pointerEvents: 'auto',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            boxShadow: '0 4px 16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)'
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+                            transition: 'all 0.2s'
                         }}
                     >
-                        <ChevronRight size={32} strokeWidth={3} />
-                        <span style={{ fontSize: '24px', fontWeight: 'bold' }}>›</span>
+                        <ChevronRight size={24} strokeWidth={2.5} />
                     </button>
 
                     {/* Dots Indicator */}
@@ -987,8 +987,18 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
                 {isSelected && <X size={16} color="white" strokeWidth={3} />}
             </div>
 
-            {/* Top Right Actions */}
-            <div className="card-actions" style={{ zIndex: 110 }}>
+            {/* Top Right Actions - 2x3 grid to avoid overlap with nav arrows */}
+            <div className="card-actions" style={{
+                zIndex: 110,
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '4px',
+                width: 'auto',
+                padding: '4px',
+                background: 'rgba(0,0,0,0.3)',
+                borderRadius: '8px',
+                backdropFilter: 'blur(4px)'
+            }}>
                 {effectiveCivitaiUrl && (
                     <a href={effectiveCivitaiUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="action-btn" title="Civitaiで開く" style={{ color: '#fff' }}>
                         <Globe size={18} strokeWidth={2.5} />
@@ -997,6 +1007,16 @@ const LoraCard = ({ file, meta, favLists = [], onUpdateMeta, onShowTags, onShowD
                 <button onClick={(e) => { e.stopPropagation(); onShowTags(); }} title="タグ一覧を表示" className="action-btn" style={{ color: '#fff' }}>
                     <List size={18} strokeWidth={2.5} />
                 </button>
+                {onRegisterCharacter && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onRegisterCharacter(); }}
+                        title="キャラクターとして登録"
+                        className="action-btn"
+                        style={{ color: '#fff' }}
+                    >
+                        <UserPlus size={18} strokeWidth={2.5} />
+                    </button>
+                )}
                 <button onClick={(e) => { e.stopPropagation(); copyPrompt(); }} title="プロンプトをコピー" className="action-btn" style={{ color: '#fff' }}>
                     <Copy size={18} strokeWidth={2.5} />
                 </button>
@@ -1139,6 +1159,7 @@ export const LoraManager = () => {
     const [loadingDescription, setLoadingDescription] = useState(false);
     const [fetchedImages, setFetchedImages] = useState<any[]>([]);
     const [sortMode, setSortMode] = useState<'name' | 'custom'>('custom');
+    const [bulkProgress, setBulkProgress] = useState<{ current: number, total: number, name: string, isAnalyzing?: boolean } | null>(null);
     const [isReordering, setIsReordering] = useState(false);
     const [cardScale, setCardScale] = useState(1);
     const [includeSubfolders, setIncludeSubfolders] = useState(false);
@@ -1316,6 +1337,125 @@ export const LoraManager = () => {
     const handleSelectFolder = (path: string) => {
         setCurrentPath(path);
         setSelectedFavList(null);
+    };
+
+    const handleRegisterCharacter = async (lora: LoraFile) => {
+        const name = prompt('キャラクター名を入力してください', (meta[lora.path]?.alias || lora.name.split('.')[0]));
+        if (!name) return;
+
+        try {
+            // Get trigger words
+            const rawWords = meta[lora.path]?.triggerWords?.split(',').map((w: string) => w.trim()).filter(Boolean) || lora.trainedWords || [];
+
+            let baseTags: string[] = [];
+            let variations: any[] = [];
+
+            const appCfg = await getAppConfig();
+            if (appCfg.geminiApiKey) {
+                if (confirm('AIを使用してタグの仕分け（基本特徴 vs 衣装）を行いますか？')) {
+                    setBulkProgress({ current: 0, total: 1, name: lora.name, isAnalyzing: true });
+                    try {
+                        const analysis = await api.post('/loras/analyze-tags', { triggerWords: rawWords });
+                        baseTags = analysis.data.base;
+                        variations = analysis.data.variations;
+                    } catch (e) {
+                        console.error("AI Analysis failed", e);
+                        baseTags = rawWords;
+                    }
+                    setBulkProgress(null);
+                } else {
+                    baseTags = rawWords;
+                }
+            } else {
+                baseTags = rawWords;
+            }
+
+            const previewUrl = lora.previewPath ? `http://localhost:3001/api/loras/image?path=${encodeURIComponent(lora.previewPath)}` : null;
+
+            // Determine series from path
+            const pathParts = lora.path.split('/');
+            let series = '未分類';
+            if (pathParts.length > 1) {
+                // heuristic: usually character/series/name
+                series = pathParts[pathParts.length - 2];
+            }
+
+            const payload = {
+                name,
+                series,
+                basePrompts: baseTags,
+                variations: variations.map(v => ({ ...v, image: previewUrl })),
+                notes: `LoRA: ${lora.path}`,
+                loras: [{ path: lora.path, weight: 1 }]
+            };
+
+            await api.post('/characters', payload);
+            window.dispatchEvent(new CustomEvent('character-update'));
+            alert('キャラクターとして登録しました');
+        } catch (e) {
+            console.error("Failed to register character", e);
+            alert('登録に失敗しました');
+        }
+    };
+
+    const handleBulkRegisterCharacters = async () => {
+        if (selectedPaths.length === 0) return;
+        if (!confirm(`${selectedPaths.length}件のLoRAをキャラクターとして一括登録しますか？`)) return;
+
+        const appCfg = await getAppConfig();
+        const useAI = appCfg.geminiApiKey && confirm('AIを使用して全アイテムのタグを自動的に仕分けますか？');
+
+        let successCount = 0;
+        setBulkProgress({ current: 0, total: selectedPaths.length, name: '' });
+
+        for (let i = 0; i < selectedPaths.length; i++) {
+            const path = selectedPaths[i];
+            const lora = files.flatMap(f => f.children || [f]).find(f => f.path === path);
+            if (!lora) continue;
+
+            setBulkProgress({ current: i + 1, total: selectedPaths.length, name: lora.name, isAnalyzing: false });
+
+            try {
+                const rawWords = meta[lora.path]?.triggerWords?.split(',').map((w: string) => w.trim()).filter(Boolean) || lora.trainedWords || [];
+                let baseTags = rawWords;
+                let variations: any[] = [];
+
+                if (useAI) {
+                    setBulkProgress(prev => prev ? { ...prev, isAnalyzing: true } : null);
+                    try {
+                        const analysis = await api.post('/loras/analyze-tags', { triggerWords: rawWords });
+                        baseTags = analysis.data.base;
+                        variations = analysis.data.variations;
+                    } catch (e) {
+                        console.error("AI Analysis failed for", lora.name, e);
+                    }
+                    setBulkProgress(prev => prev ? { ...prev, isAnalyzing: false } : null);
+                }
+
+                const previewUrl = lora.previewPath ? `http://localhost:3001/api/loras/image?path=${encodeURIComponent(lora.previewPath)}` : null;
+                const pathParts = lora.path.split('/');
+                let series = pathParts.length > 1 ? pathParts[pathParts.length - 2] : '未分類';
+
+                const payload = {
+                    name: meta[lora.path]?.alias || lora.name.replace(/\.[^/.]+$/, ""),
+                    series,
+                    basePrompts: baseTags,
+                    variations: variations.map(v => ({ ...v, image: previewUrl })),
+                    notes: `LoRA: ${lora.path}`,
+                    loras: [{ path: lora.path, weight: 1 }]
+                };
+
+                await api.post('/characters', payload);
+                successCount++;
+            } catch (e) {
+                console.error("Failed to register", lora.name, e);
+            }
+        }
+
+        setBulkProgress(null);
+        window.dispatchEvent(new CustomEvent('character-update'));
+        alert(`${successCount}件のキャラクターを登録しました`);
+        setSelectedPaths([]);
     };
 
     const handleCreateFolder = async () => {
@@ -1914,6 +2054,19 @@ export const LoraManager = () => {
                                     style={{ paddingLeft: '2rem', width: '250px' }}
                                 />
                             </div>
+                            {selectedPaths.length > 0 && (
+                                <button
+                                    onClick={handleBulkRegisterCharacters}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '5px',
+                                        background: 'var(--accent)', color: 'white',
+                                        border: 'none', padding: '0.4rem 1rem', borderRadius: '4px',
+                                        cursor: 'pointer', fontWeight: 'bold'
+                                    }}
+                                >
+                                    <UserPlus size={16} /> キャラクター一括登録 ({selectedPaths.length})
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1959,6 +2112,7 @@ export const LoraManager = () => {
                                                 showPath={true}
                                                 isSelected={selectedPaths.includes(file.path)}
                                                 onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
+                                                onRegisterCharacter={() => handleRegisterCharacter(file)}
                                             />
                                         ))}
                                     </div>
@@ -2023,6 +2177,7 @@ export const LoraManager = () => {
                                                     showPath={false} // Path is shown in header now
                                                     isSelected={selectedPaths.includes(file.path)}
                                                     onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
+                                                    onRegisterCharacter={() => handleRegisterCharacter(file)}
                                                 />
                                             </div>
                                         ))}
@@ -2080,6 +2235,7 @@ export const LoraManager = () => {
                                             isSelected={selectedPaths.includes(file.path)}
                                             selectedCount={selectedPaths.length}
                                             onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
+                                            onRegisterCharacter={() => handleRegisterCharacter(file)}
                                         />
                                     </div>
                                 );
@@ -2210,6 +2366,71 @@ export const LoraManager = () => {
                             onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [normalizePath(selectedLoraForTags.path)]: newMeta }))}
                             onClose={() => setSelectedLoraForTags(null)}
                         />
+                    </div>
+                </div>
+            )}
+
+            {bulkProgress && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 3000,
+                    background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem'
+                }}>
+                    <div className="glass-panel" style={{ width: '100%', maxWidth: '450px', padding: '2rem', textAlign: 'center' }}>
+                        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                            <div style={{
+                                width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(56, 189, 248, 0.1)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)'
+                            }}>
+                                <Users size={32} />
+                            </div>
+                        </div>
+
+                        <h3 style={{ margin: '0 0 0.5rem 0', color: 'white' }}>キャラクター一括登録中</h3>
+                        <p style={{ margin: '0 0 1.5rem 0', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                            {bulkProgress.current} / {bulkProgress.total} アイテム処理中...
+                        </p>
+
+                        <div style={{
+                            fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 'bold',
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                            marginBottom: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '4px'
+                        }}>
+                            {bulkProgress.name}
+                        </div>
+
+                        {bulkProgress.isAnalyzing && (
+                            <div style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                                color: '#fb923c', fontSize: '0.8rem', marginBottom: '1rem', animation: 'pulse 1.5s infinite'
+                            }}>
+                                <Sparkles size={14} className="spin" />
+                                AIがプロンプトを分析しています...
+                            </div>
+                        )}
+
+                        <div style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                            <div style={{
+                                width: `${(bulkProgress.current / bulkProgress.total) * 100}%`,
+                                height: '100%', background: 'linear-gradient(to right, #38bdf8, #818cf8)',
+                                transition: 'width 0.3s ease'
+                            }} />
+                        </div>
+
+                        <style>{`
+                            @keyframes pulse {
+                                0% { opacity: 0.6; }
+                                50% { opacity: 1; }
+                                100% { opacity: 0.6; }
+                            }
+                            .spin {
+                                animation: spin 2s linear infinite;
+                            }
+                            @keyframes spin {
+                                from { transform: rotate(0deg); }
+                                to { transform: rotate(360deg); }
+                            }
+                        `}</style>
                     </div>
                 </div>
             )}
