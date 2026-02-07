@@ -1,40 +1,24 @@
 [
   {
-    "id": "8f51e92d-b76c-4c88-9e42-b7bb3e0322e7",
+    "id": "78820ee1-6410-4ceb-a36f-2a6807f9cf37",
     "favoriteLists": [],
     "basePrompts": [
-      "aavenus",
-      "long hair",
-      "blonde hair",
-      "blue eyes"
+      "<lora:Romi_-_Catch_Teenieping___illustriousXL_:1>"
     ],
     "variations": [
       {
-        "id": "v-1770428121144-0",
-        "name": "Sailor Uniform",
-        "prompts": [
-          "hair bow",
-          "tiara",
-          "earrings",
-          "orange choker",
-          "orange sailor collar",
-          "blue bow",
-          "white shirt",
-          "elbow gloves",
-          "white gloves",
-          "pleated skirt",
-          "orange skirt",
-          "bare legs"
-        ],
-        "image": "http://localhost:3001/api/loras/image?path=character%2Fanime%2Fsailor_venus_animaginexl_v2.preview.png"
+        "id": "v-1770443988023",
+        "name": "通常衣装",
+        "prompts": [],
+        "image": "http://localhost:3001/api/loras/image?path=character%2FRomi_-_Catch_Teenieping___illustriousXL_.preview.png"
       }
     ],
-    "series": "anime",
-    "notes": "LoRA: character/anime/sailor_venus_animaginexl_v2.safetensors",
-    "name": "sailor_venus_animaginexl_v2",
+    "series": "character",
+    "notes": "LoRA: character/Romi_-_Catch_Teenieping___illustriousXL_.safetensors",
+    "name": "Romi_-_Catch_Teenieping___illustriousXL_",
     "loras": [
       {
-        "path": "character/anime/sailor_venus_animaginexl_v2.safetensors",
+        "path": "character/Romi_-_Catch_Teenieping___illustriousXL_.safetensors",
         "weight": 1
       }
     ]

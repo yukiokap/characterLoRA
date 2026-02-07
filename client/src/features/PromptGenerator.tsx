@@ -152,7 +152,7 @@ export const PromptGenerator = () => {
 
     const generatedPrompts = useMemo(() => {
         const situationLines = situationPrompts.split('\n').map(l => l.trim()).filter(l => l !== '');
-        if (selectedChars.length === 0 || (situationLines.length === 0 && !globalPrompt)) return '';
+        if (selectedChars.length === 0) return '';
 
         const results: string[] = [];
         const linesToProcess = situationLines.length > 0 ? situationLines : [''];
