@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getCharacters, getLists, getSituations, saveSituations } from '../api';
 import { type Character } from '../types';
-import { Sparkles, Users, Plus, Copy, Check, List, Heart, Search, X, Save, FolderOpen, Globe, RefreshCw } from 'lucide-react';
+import { Sparkles, Users, Plus, Copy, Check, List, Heart, Search, X, Save, FolderOpen, Globe } from 'lucide-react';
 
 interface GeneratorCharacter {
     id: string; // Internal unique ID for the generator list
@@ -206,30 +206,51 @@ export const PromptGenerator = () => {
         <div className="prompt-generator" style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
             {/* Sidebar: Character Library */}
             <aside style={{ width: '320px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', background: 'rgba(15, 23, 42, 0.3)' }}>
-                <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem' }}>
-                            <Users size={20} color="var(--accent)" /> Character Library
-                        </h3>
-                        <button
-                            onClick={fetchData}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '4px', display: 'flex' }}
-                            title="Refresh library"
-                        >
-                            <RefreshCw size={14} />
-                        </button>
-                    </div>
-                    <div style={{ position: 'relative', marginBottom: '1rem' }}>
-                        <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', opacity: 0.7 }} />
                         <input
                             type="text"
-                            placeholder="Search characters..."
+                            placeholder="キャラクターを検索..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ width: '100%', paddingLeft: '2.2rem', paddingRight: '1rem' }}
+                            style={{
+                                width: '100%',
+                                padding: '0.6rem 2.8rem 0.6rem 2.8rem',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                background: 'rgba(0, 0, 0, 0.2)',
+                                border: '1px solid var(--border)',
+                                color: 'white'
+                            }}
                         />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                style={{
+                                    position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                    background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                                    cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center'
+                                }}
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
                     </div>
-                    {/* Favorite Lists Quick Select */}
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <Users size={14} style={{ verticalAlign: 'middle' }} /> キャラクターライブラリ
+                        </h3>
+                    </div>
+                </div>
+
+                <div style={{ padding: '0 1.5rem 1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Heart size={14} style={{ verticalAlign: 'middle' }} /> お気に入り
+                        </div>
+                    </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                         <button
                             onClick={() => setSelectedList(null)}
@@ -239,7 +260,7 @@ export const PromptGenerator = () => {
                                 color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'
                             }}
                         >
-                            All
+                            すべて
                         </button>
                         {favLists.map(list => (
                             <button
@@ -255,13 +276,18 @@ export const PromptGenerator = () => {
                                 <Heart size={10} fill={selectedList === list ? 'white' : 'none'} /> {list}
                             </button>
                         ))}
+                        {favLists.length === 0 && (
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', opacity: 0.5, padding: '0.5rem 0' }}>
+                                リストがありません
+                            </div>
+                        )}
                     </div>
                     {selectedList && (
                         <button
                             onClick={() => addListToGenerator(selectedList)}
                             style={{ width: '100%', marginTop: '10px', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: '4px', padding: '6px', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 600 }}
                         >
-                            リスト内の全キャラを追加
+                            リスト内のキャラを追加
                         </button>
                     )}
                 </div>
@@ -280,6 +306,7 @@ export const PromptGenerator = () => {
                                 <div key={series} style={{ marginBottom: '1rem' }}>
                                     <div
                                         onClick={() => toggleSeriesExpand(series)}
+                                        className="sidebar-item-row"
                                         style={{
                                             padding: '6px 10px', fontSize: '0.75rem', color: isSeriesExpanded ? 'var(--accent)' : 'var(--text-secondary)',
                                             fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px',
@@ -298,7 +325,7 @@ export const PromptGenerator = () => {
                                         return (
                                             <div key={char.id} style={{ marginBottom: '4px' }}>
                                                 <div
-                                                    className="glass-panel"
+                                                    className="glass-panel sidebar-item-row"
                                                     style={{
                                                         padding: '8px 12px', display: 'flex', justifyContent: 'space-between',
                                                         alignItems: 'center', transition: 'all 0.2s', cursor: 'pointer',
@@ -319,7 +346,7 @@ export const PromptGenerator = () => {
                                                             <div
                                                                 key={idx}
                                                                 onClick={() => addCharacterToGenerator(char, idx)}
-                                                                className="glass-panel"
+                                                                className="glass-panel sidebar-item-row"
                                                                 style={{
                                                                     padding: '6px 10px', fontSize: '0.8rem', display: 'flex',
                                                                     justifyContent: 'space-between', alignItems: 'center',
@@ -391,24 +418,24 @@ export const PromptGenerator = () => {
                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                 <h3 style={{ margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                                    <List size={20} color="var(--accent)" /> 1. Characters
+                                    <List size={20} color="var(--accent)" /> 1. キャラクター選択
                                     <div style={{ display: 'flex', gap: '8px' }}>
                                         <span style={{ fontSize: '0.75rem', background: 'var(--accent)', color: 'white', padding: '2px 10px', borderRadius: '10px', fontWeight: 600 }}>
-                                            {selectedChars.length} Characters
+                                            {selectedChars.length} 人
                                         </span>
                                         {generatedPrompts && (
                                             <span style={{ fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '2px 10px', borderRadius: '10px', fontWeight: 600, border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                                                {generatedPrompts.split('\n').filter(l => l !== '').length} Total Prompts
+                                                計 {generatedPrompts.split('\n').filter(l => l !== '').length} 行のプロンプト
                                             </span>
                                         )}
                                     </div>
                                 </h3>
                                 <div style={{ display: 'flex', gap: '10px' }}>
                                     <button onClick={addManualCharacter} className="glass-button" style={{ fontSize: '0.8rem', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                        <Plus size={14} /> New Row
+                                        <Plus size={14} /> 行を追加
                                     </button>
                                     <button onClick={clearAll} style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.8rem' }}>
-                                        Clear All
+                                        リストをクリア
                                     </button>
                                 </div>
                             </div>
@@ -422,9 +449,9 @@ export const PromptGenerator = () => {
                                     <>
                                         {/* Table Header */}
                                         <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr 40px', gap: '15px', padding: '0 15px', marginBottom: '-5px' }}>
-                                            <label style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, opacity: 0.6 }}>NAME</label>
-                                            <label style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, opacity: 0.6 }}>BASE</label>
-                                            <label style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, opacity: 0.6 }}>COSTUME</label>
+                                            <label style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, opacity: 0.6 }}>名前</label>
+                                            <label style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, opacity: 0.6 }}>基本プロンプト</label>
+                                            <label style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', fontWeight: 800, opacity: 0.6 }}>衣装・特徴</label>
                                             <div></div>
                                         </div>
 
@@ -482,10 +509,10 @@ export const PromptGenerator = () => {
                     <div style={{ flex: 0.8, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h3 style={{ margin: 0, fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <Copy size={20} color="var(--accent)" /> 2. Output
+                                <Copy size={20} color="var(--accent)" /> 2. 出力結果
                                 {generatedPrompts && (
                                     <span style={{ fontSize: '0.75rem', background: 'rgba(129, 140, 248, 0.2)', color: '#818cf8', padding: '2px 10px', borderRadius: '10px', fontWeight: 600, border: '1px solid rgba(129, 140, 248, 0.3)', marginLeft: '8px' }}>
-                                        {generatedPrompts.split('\n').filter(l => l !== '').length} lines
+                                        {generatedPrompts.split('\n').filter(l => l !== '').length} 行
                                     </span>
                                 )}
                             </h3>
@@ -499,7 +526,7 @@ export const PromptGenerator = () => {
                                 }}
                             >
                                 {copied ? <Check size={16} /> : <Copy size={16} />}
-                                {copied ? 'Copied!' : 'Copy Results'}
+                                {copied ? 'コピーしました！' : '結果をコピー'}
                             </button>
                         </div>
                         <div style={{ flex: 1, background: 'rgba(0,0,0,0.4)', borderRadius: '12px', border: '1px solid var(--border)', overflow: 'hidden' }}>
@@ -522,7 +549,7 @@ export const PromptGenerator = () => {
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
                             <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <Sparkles size={20} color="var(--accent)" /> 3. Situation Prompts
+                                <Sparkles size={20} color="var(--accent)" /> 3. シチュエーション
                             </h3>
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button
@@ -530,7 +557,7 @@ export const PromptGenerator = () => {
                                     className="glass-button"
                                     style={{ fontSize: '0.8rem', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                                 >
-                                    <FolderOpen size={14} /> Templates
+                                    <FolderOpen size={14} /> テンプレート
                                 </button>
                                 <button
                                     onClick={() => {
@@ -541,7 +568,7 @@ export const PromptGenerator = () => {
                                     className="glass-button"
                                     style={{ fontSize: '0.8rem', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                                 >
-                                    <Save size={14} /> Save
+                                    <Save size={14} /> 保存
                                 </button>
                             </div>
                         </div>
@@ -563,7 +590,7 @@ export const PromptGenerator = () => {
                     {showTemplateModal && (
                         <div className="glass-panel" style={{ width: '250px', display: 'flex', flexDirection: 'column', padding: '1rem', border: '1px solid var(--accent)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>SAVED TEMPLATES</span>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>保存済みテンプレート</span>
                                 <button onClick={() => setShowTemplateModal(false)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><X size={14} /></button>
                             </div>
                             <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '5px' }}>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getAppConfig, updateAppConfig } from '../api';
-import { Sparkles, Copy, Check, Settings, Trash2, X, Plus } from 'lucide-react';
+import { Tags, Copy, Check, Settings, Trash2, X, Plus, Loader2 } from 'lucide-react';
 
 interface DecomposedRow {
     id: string;
@@ -44,7 +44,7 @@ export const TagComposer = () => {
     const [rows, setRows] = useState<DecomposedRow[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [config, setConfig] = useState<{ geminiApiKey?: string; openaiApiKey?: string; geminiModel?: string }>({
-        geminiModel: 'gemini-3-flash-preview'
+        geminiModel: 'gemini-1.5-flash'
     });
     const [showSettings, setShowSettings] = useState(false);
     const [copiedRowId, setCopiedRowId] = useState<string | null>(null);
@@ -91,7 +91,7 @@ export const TagComposer = () => {
         const totalLines = lines.length;
         let skippedCount = 0;
 
-        const modelName = config.geminiModel || 'gemini-3-flash-preview';
+        const modelName = config.geminiModel || 'gemini-1.5-flash';
 
         const processChunk = async (promptLines: string[], retryCount = 0): Promise<any> => {
             const systemPrompt = `AI画像生成（Stable Diffusion）用の構成要素（属性）を抽出する技術的なメタデータ管理タスクです。指示に従って機械的にJSONを生成してください。
@@ -314,12 +314,12 @@ export const TagComposer = () => {
     return (
         <div className="tag-composer" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', padding: '1.5rem', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                    <Sparkles size={24} color="var(--accent)" /> Tag Composer
+                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    <Tags size={18} style={{ color: 'var(--accent)' }} /> タグ構成
                 </h2>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => setShowSettings(true)} className="glass-button" style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <Settings size={18} /> Settings
+                    <button onClick={() => setShowSettings(true)} className="glass-button" style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem' }}>
+                        <Settings size={16} /> 設定
                     </button>
                 </div>
             </div>
@@ -327,22 +327,22 @@ export const TagComposer = () => {
             {/* Input Area */}
             <div className="glass-panel" style={{ padding: '1.2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        Input Prompts (1 line per prompt)
-                    </label>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        プロンプト入力 (1行1プロンプト)
+                    </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         {isAnalyzing && processingProgress && (
-                            <div style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
-                                Processing: {processingProgress.current} / {processingProgress.total}...
+                            <div style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Loader2 size={16} className="animate-spin" />
+                                解析中: {processingProgress.current} / {processingProgress.total}...
                             </div>
                         )}
                         {isAnalyzing ? (
                             <button
                                 onClick={stopAnalysis}
-                                className="glass-button"
                                 style={{
                                     background: '#ef4444', color: 'white', border: 'none',
-                                    padding: '6px 20px', fontSize: '0.9rem', fontWeight: 700
+                                    padding: '6px 20px', fontSize: '0.9rem', fontWeight: 700, borderRadius: '6px', cursor: 'pointer'
                                 }}
                             >
                                 中止
@@ -351,10 +351,10 @@ export const TagComposer = () => {
                             <button
                                 onClick={analyzePrompts}
                                 disabled={!inputPrompts.trim()}
-                                className="glass-button"
                                 style={{
                                     background: 'var(--accent)', color: 'white', border: 'none',
-                                    padding: '6px 20px', fontSize: '0.9rem', fontWeight: 700
+                                    padding: '6px 20px', fontSize: '0.9rem', fontWeight: 700, borderRadius: '6px', cursor: 'pointer',
+                                    opacity: !inputPrompts.trim() ? 0.5 : 1
                                 }}
                             >
                                 AIで自動振り分け
@@ -365,7 +365,7 @@ export const TagComposer = () => {
                 <textarea
                     value={inputPrompts}
                     onChange={(e) => setInputPrompts(e.target.value)}
-                    placeholder="Enter prompts here...&#10;masterpiece, 1girl, solo, beach...&#10;best quality, school uniform, standing..."
+                    placeholder="プロンプトを入力してください...&#10;masterpiece, 1girl, solo, beach...&#10;best quality, school uniform, standing..."
                     style={{
                         width: '100%', height: '100px', background: 'rgba(0,0,0,0.2)',
                         border: '1px solid var(--border)', borderRadius: '8px', color: 'white',
@@ -378,19 +378,19 @@ export const TagComposer = () => {
             <div className="glass-panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, padding: '1rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Generated Rows ({rows.length})</h3>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem' }}>解析結果 ({rows.length}件)</h3>
                         {rows.length > 0 && (
                             <button onClick={copyAll} className="glass-button" style={{ fontSize: '0.8rem', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '5px', color: allCopied ? '#10b981' : 'inherit' }}>
-                                {allCopied ? <Check size={14} /> : <Copy size={14} />} ALL Copy
+                                {allCopied ? <Check size={14} /> : <Copy size={14} />} 全コピー
                             </button>
                         )}
                         <button onClick={addManualRow} className="glass-button" style={{ fontSize: '0.8rem', padding: '4px 12px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <Plus size={14} /> New Row
+                            <Plus size={14} /> 行追加
                         </button>
                     </div>
                     {rows.length > 0 && (
                         <button onClick={clearRows} style={{ color: '#ef4444', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}>
-                            Clear All
+                            すべてクリア
                         </button>
                     )}
                 </div>
@@ -450,51 +450,53 @@ export const TagComposer = () => {
             </div>
 
             {/* Settings Modal */}
-            {showSettings && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-                }}>
-                    <div className="glass-panel" style={{ width: '400px', padding: '2rem', border: '1px solid var(--accent)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ margin: 0 }}>API Settings</h3>
-                            <button onClick={() => setShowSettings(false)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><X /></button>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '5px', opacity: 0.7 }}>Gemini Model</label>
-                                <input
-                                    type="text"
-                                    value={config.geminiModel}
-                                    onChange={(e) => setConfig({ ...config, geminiModel: e.target.value })}
-                                    onBlur={(e) => handleSaveConfig({ geminiModel: e.target.value })}
-                                    placeholder="e.g. gemini-2.0-flash-exp"
-                                    style={{ width: '100%' }}
-                                />
+            {
+                showSettings && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                    }}>
+                        <div className="glass-panel" style={{ width: '400px', padding: '2rem', border: '1px solid var(--accent)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h3 style={{ margin: 0 }}>API Settings</h3>
+                                <button onClick={() => setShowSettings(false)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><X /></button>
                             </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '5px', opacity: 0.7 }}>Gemini API Key</label>
-                                <input
-                                    type="password"
-                                    defaultValue={config.geminiApiKey || ''}
-                                    placeholder="Enter Gemini API key"
-                                    style={{ width: '100%' }}
-                                    onBlur={(e) => handleSaveConfig({ geminiApiKey: e.target.value })}
-                                />
-                                <p style={{ fontSize: '0.7rem', opacity: 0.5, marginTop: '5px' }}>
-                                    Google AI Studioから無料で取得可能です。
-                                </p>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '5px', opacity: 0.7 }}>Gemini Model</label>
+                                    <input
+                                        type="text"
+                                        value={config.geminiModel}
+                                        onChange={(e) => setConfig({ ...config, geminiModel: e.target.value })}
+                                        onBlur={(e) => handleSaveConfig({ geminiModel: e.target.value })}
+                                        placeholder="e.g. gemini-2.0-flash-exp"
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.8rem', marginBottom: '5px', opacity: 0.7 }}>Gemini API Key</label>
+                                    <input
+                                        type="password"
+                                        defaultValue={config.geminiApiKey || ''}
+                                        placeholder="Enter Gemini API key"
+                                        style={{ width: '100%' }}
+                                        onBlur={(e) => handleSaveConfig({ geminiApiKey: e.target.value })}
+                                    />
+                                    <p style={{ fontSize: '0.7rem', opacity: 0.5, marginTop: '5px' }}>
+                                        Google AI Studioから無料で取得可能です。
+                                    </p>
+                                </div>
                             </div>
-                        </div>
-                        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-                            <button onClick={() => setShowSettings(false)} className="glass-button" style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '8px 20px' }}>
-                                Done
-                            </button>
+                            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                <button onClick={() => setShowSettings(false)} className="glass-button" style={{ background: 'var(--accent)', color: 'white', border: 'none', padding: '8px 20px' }}>
+                                    Done
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };

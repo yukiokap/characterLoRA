@@ -64,7 +64,7 @@ function App() {
             height: '100%', borderBottom: activeTab === 'characters' ? '2px solid var(--accent)' : '2px solid transparent'
           }}
         >
-          <Users size={18} /> Characters
+          <Users size={18} /> キャラクター
         </button>
 
         <button
@@ -77,7 +77,7 @@ function App() {
             height: '100%', borderBottom: activeTab === 'loras' ? '2px solid var(--accent)' : '2px solid transparent'
           }}
         >
-          <Database size={18} /> LoRA Library
+          <Database size={18} /> LoRAライブラリ
         </button>
 
         <button
@@ -90,7 +90,7 @@ function App() {
             height: '100%', borderBottom: activeTab === 'wildcards' ? '2px solid var(--accent)' : '2px solid transparent'
           }}
         >
-          <FileText size={18} /> Wildcards
+          <FileText size={18} /> ワイルドカード
         </button>
 
         <button
@@ -103,7 +103,7 @@ function App() {
             height: '100%', borderBottom: activeTab === 'batch' ? '2px solid var(--accent)' : '2px solid transparent'
           }}
         >
-          <Sparkles size={18} /> Batch Generation
+          <Sparkles size={18} /> 一括生成
         </button>
 
         <button
@@ -116,7 +116,7 @@ function App() {
             height: '100%', borderBottom: activeTab === 'composer' ? '2px solid var(--accent)' : '2px solid transparent'
           }}
         >
-          <Tags size={18} /> Tag Composer
+          <Tags size={18} /> タグ構成
         </button>
 
         {/* Global Toolbar */}
@@ -176,6 +176,7 @@ function App() {
                 Wildcardファイルが保存されているフォルダを指定してください。
               </p>
             </div>
+
 
             <div>
               <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>Gemini API キー</label>

@@ -260,7 +260,11 @@ select:focus {
   gap: 1rem;
   border-right: 1px solid var(--card-border);
   background: rgba(15, 23, 42, 0.3);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
 }
+
 
 .main-content {
   flex: 1;
@@ -303,4 +307,57 @@ select:focus {
 
 .glass-panel:hover .tag-image-bg {
   opacity: 0.8 !important;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Unified Sidebar Item Hover */
+.sidebar-item-row {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sidebar-item-row:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Unified Action Icons */
+.hover-actions-container {
+  display: flex;
+  gap: 4px;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar-item-row:hover .hover-actions-container {
+  opacity: 0.8;
+}
+
+.action-icon-btn {
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 2px;
+}
+
+.action-icon-btn:hover {
+  opacity: 1 !important;
+  transform: scale(1.2);
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { getWildcardFiles, getWildcardContent, saveWildcardContent, createWildcardFile, deleteWildcardFile, getAppConfig, updateAppConfig, type WildcardFile } from '../api';
-import { Folder, FileText, Plus, Save, Trash2, Search, Settings, X, Wand2, ChevronRight, ChevronDown } from 'lucide-react';
+import { getWildcardFiles, getWildcardContent, saveWildcardContent, createWildcardFile, deleteWildcardFile, getAppConfig, type WildcardFile } from '../api';
+import { Folder, FileText, Plus, Save, Trash2, Search, Wand2, ChevronRight, ChevronDown, X, Loader2 } from 'lucide-react';
 
 
 export const WildcardManager = () => {
@@ -11,7 +11,6 @@ export const WildcardManager = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [config, setConfig] = useState<{ wildcardDir?: string; geminiApiKey?: string; geminiModel?: string }>({});
-    const [showSettings, setShowSettings] = useState(false);
     const [isAILoading, setIsAILoading] = useState(false);
     const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
 
@@ -41,15 +40,6 @@ export const WildcardManager = () => {
         }
     };
 
-    const handleSaveSettings = async () => {
-        try {
-            await updateAppConfig(config);
-            setShowSettings(false);
-            fetchFiles();
-        } catch (err) {
-            alert('Failed to save settings');
-        }
-    };
 
     const handleSelectFile = async (path: string) => {
         setIsLoading(true);
@@ -105,8 +95,7 @@ export const WildcardManager = () => {
 
     const handleAISupport = async () => {
         if (!config.geminiApiKey) {
-            alert('Gemini APIキーを設定してください。');
-            setShowSettings(true);
+            alert('Gemini APIキーをグローバル設定（画面右上の歯車アイコン）から設定してください。');
             return;
         }
 
@@ -115,7 +104,7 @@ export const WildcardManager = () => {
 
         setIsAILoading(true);
         try {
-            const modelName = config.geminiModel || 'gemini-3-flash-preview';
+            const modelName = 'gemini-1.5-flash';
 
             const lines = content.split('\n');
             const truncatedContent = lines.length > 30 ? '... (truncated)\n' + lines.slice(-30).join('\n') : content;
@@ -186,23 +175,34 @@ export const WildcardManager = () => {
     };
 
     const renderTree = (items: WildcardFile[], level = 0) => {
+        // Helper to check if a node or any of its children matches the query
+        const hasMatch = (item: WildcardFile): boolean => {
+            if (!searchQuery) return true;
+            const query = searchQuery.toLowerCase();
+            if (item.name.toLowerCase().includes(query)) return true;
+            if (item.type === 'directory' && item.children) {
+                return item.children.some(child => hasMatch(child));
+            }
+            return false;
+        };
+
         return items
-            .filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()) || (item.type === 'directory' && item.children))
+            .filter(hasMatch)
             .map(item => {
                 const isSelected = selectedPath === item.path;
                 if (item.type === 'directory') {
-                    const isExpanded = expandedPaths.has(item.path);
+                    // For directories, we show them if we aren't searching, 
+                    // or if they match, or if they have matching children.
+                    const isExpanded = expandedPaths.has(item.path) || (searchQuery.length > 0);
                     return (
                         <div key={item.path}>
                             <div
                                 onClick={() => toggleFolder(item.path)}
+                                className="sidebar-item-row"
                                 style={{
                                     display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px',
-                                    marginLeft: level * 12, cursor: 'pointer', borderRadius: '4px',
-                                    transition: 'background 0.2s'
+                                    marginLeft: level * 12, cursor: 'pointer', borderRadius: '4px'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
                             >
                                 {isExpanded ? <ChevronDown size={14} opacity={0.5} /> : <ChevronRight size={14} opacity={0.5} />}
                                 <Folder size={14} color="var(--accent)" style={{ opacity: 0.8 }} />
@@ -216,26 +216,27 @@ export const WildcardManager = () => {
                     <div
                         key={item.path}
                         onClick={() => handleSelectFile(item.path)}
+                        className={`sidebar-item-row ${isSelected ? 'active' : ''}`}
                         style={{
                             display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px',
                             marginLeft: level * 12 + 18, cursor: 'pointer', borderRadius: '4px',
                             background: isSelected ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
                             color: isSelected ? 'var(--accent)' : 'var(--text-secondary)',
-                            transition: 'all 0.2s',
                             position: 'relative'
                         }}
-                        className="wildcard-item"
                     >
                         <FileText size={14} />
                         <span style={{ fontSize: '0.85rem', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {item.name}
                         </span>
-                        <Trash2
-                            size={14}
-                            className="delete-icon"
-                            onClick={(e) => handleDeleteFile(item.path, e)}
-                            style={{ opacity: 0, transition: 'opacity 0.2s', color: '#ef4444' }}
-                        />
+                        <div className="hover-actions-container">
+                            <Trash2
+                                size={14}
+                                className="action-icon-btn"
+                                onClick={(e) => handleDeleteFile(item.path, e)}
+                                style={{ color: '#ef4444' }}
+                            />
+                        </div>
                     </div>
                 );
             });
@@ -245,35 +246,51 @@ export const WildcardManager = () => {
         <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
             {/* Sidebar */}
             <div style={{ width: '280px', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column', background: 'rgba(15, 23, 42, 0.3)' }}>
-                <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h3 style={{ margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FileText size={18} color="var(--accent)" /> Wildcards
-                        </h3>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                            <button onClick={handleCreateFile} className="glass-button" style={{ padding: '4px' }} title="New File">
-                                <Plus size={16} />
-                            </button>
-                            <button onClick={() => setShowSettings(true)} className="glass-button" style={{ padding: '4px' }} title="Settings">
-                                <Settings size={16} />
-                            </button>
-                        </div>
-                    </div>
+                <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div style={{ position: 'relative' }}>
-                        <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }} />
+                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', opacity: 0.7 }} />
                         <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder="検索..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            style={{ width: '100%', padding: '6px 10px 6px 30px', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '0.8rem' }}
+                            style={{
+                                width: '100%',
+                                padding: '0.6rem 2.8rem 0.6rem 2.8rem',
+                                borderRadius: '8px',
+                                fontSize: '0.9rem',
+                                background: 'rgba(0, 0, 0, 0.2)',
+                                border: '1px solid var(--border)',
+                                color: 'white'
+                            }}
                         />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery('')}
+                                style={{
+                                    position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                    background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                                    cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center'
+                                }}
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            <FileText size={14} style={{ verticalAlign: 'middle' }} /> ワイルドカード
+                        </h3>
+                        <button onClick={handleCreateFile} style={{ background: 'transparent', padding: '2px', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }} title="新規作成">
+                            <Plus size={14} />
+                        </button>
                     </div>
                 </div>
                 <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
                     {files.length === 0 ? (
                         <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5, fontSize: '0.8rem' }}>
-                            No files found.<br />Check your settings.
+                            ファイルが見つかりません。<br />設定を確認してください。
                         </div>
                     ) : renderTree(files)}
                 </div>
@@ -287,7 +304,7 @@ export const WildcardManager = () => {
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <FileText size={16} color="var(--accent)" />
                                 <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{selectedPath}</span>
-                                {isLoading && <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>Loading...</span>}
+                                {isLoading && <Loader2 size={16} className="animate-spin" style={{ color: 'var(--accent)', opacity: 0.8 }} />}
                             </div>
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button
@@ -297,7 +314,7 @@ export const WildcardManager = () => {
                                     style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', border: '1px solid rgba(139, 92, 246, 0.5)', color: '#a78bfa' }}
                                 >
                                     <Wand2 size={16} />
-                                    {isAILoading ? 'Thinking...' : 'AI Support'}
+                                    {isAILoading ? '生成中...' : 'AIアシスト'}
                                 </button>
                                 <button
                                     onClick={handleSave}
@@ -306,7 +323,7 @@ export const WildcardManager = () => {
                                     style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 16px', background: 'var(--accent)', color: 'white', border: 'none' }}
                                 >
                                     <Save size={16} />
-                                    {isSaving ? 'Saving...' : 'Save'}
+                                    {isSaving ? '保存中...' : '保存'}
                                 </button>
                             </div>
                         </div>
@@ -320,94 +337,20 @@ export const WildcardManager = () => {
                                     padding: '1.5rem', fontSize: '1rem', outline: 'none', resize: 'none',
                                     fontFamily: 'monospace', lineHeight: '1.6'
                                 }}
-                                placeholder="Enter words, one per line..."
+                                placeholder="単語を一行ずつ入力してください..."
                             />
                         </div>
                     </>
                 ) : (
                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.3, flexDirection: 'column', gap: '1rem' }}>
                         <FileText size={64} />
-                        <span>Select a file to edit</span>
+                        <span>編集するファイルを選択してください</span>
                     </div>
                 )}
             </div>
 
-            {/* Settings Modal */}
-            {showSettings && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
-                }}>
-                    <div className="glass-panel" style={{ width: '500px', padding: '2rem', border: '1px solid var(--accent)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h3 style={{ margin: 0 }}>Wildcard Settings</h3>
-                            <button onClick={() => { setShowSettings(false); fetchFiles(); }} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><X /></button>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '8px', color: 'var(--text-secondary)' }}>Wildcard Directory Path</label>
-                                <input
-                                    type="text"
-                                    value={config.wildcardDir || ''}
-                                    onChange={(e) => setConfig({ ...config, wildcardDir: e.target.value })}
-                                    onBlur={(e) => updateAppConfig({ wildcardDir: e.target.value })}
-                                    placeholder="C:\stable-diffusion-webui\extensions\sd-dynamic-prompts\wildcards"
-                                    style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', color: 'white', padding: '10px', borderRadius: '6px' }}
-                                />
-                                <p style={{ fontSize: '0.75rem', marginTop: '6px', opacity: 0.5 }}>Dynamic Promptsなどの拡張機能が使用するフォルダを指定してください。</p>
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '8px', color: 'var(--text-secondary)' }}>Gemini Model</label>
-                                <input
-                                    type="text"
-                                    value={config.geminiModel || ''}
-                                    onChange={(e) => setConfig({ ...config, geminiModel: e.target.value })}
-                                    onBlur={(e) => updateAppConfig({ geminiModel: e.target.value })}
-                                    placeholder="gemini-3-flash-preview"
-                                    style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', color: 'white', padding: '10px', borderRadius: '6px' }}
-                                />
-                            </div>
-                            <div>
-                                <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: '8px', color: 'var(--text-secondary)' }}>Gemini API Key</label>
-                                <input
-                                    type="password"
-                                    value={config.geminiApiKey || ''}
-                                    onChange={(e) => setConfig({ ...config, geminiApiKey: e.target.value })}
-                                    onBlur={(e) => updateAppConfig({ geminiApiKey: e.target.value })}
-                                    placeholder="Enter your API key"
-                                    style={{ width: '100%', background: 'rgba(0,0,0,0.3)', border: '1px solid var(--border)', color: 'white', padding: '10px', borderRadius: '6px' }}
-                                />
-                            </div>
-                        </div>
-                        <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
-                            <button
-                                onClick={handleSaveSettings}
-                                className="glass-button"
-                                style={{ background: 'var(--accent)', color: 'white', padding: '8px 24px', border: 'none' }}
-                            >
-                                Save & Refresh
-                            </button>
-                            <button
-                                onClick={() => { setShowSettings(false); fetchFiles(); }}
-                                className="glass-button"
-                                style={{ padding: '8px 24px' }}
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Modal removed as it is now in global settings */}
 
-            <style>{`
-                .wildcard-item:hover .delete-icon {
-                    opacity: 0.6 !important;
-                }
-                .delete-icon:hover {
-                    opacity: 1 !important;
-                }
-            `}</style>
         </div>
     );
 };

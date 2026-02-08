@@ -65,7 +65,7 @@ function writeLoraMeta(meta: any) {
 
 // Ensure files exist
 if (!fs.existsSync(CHARACTERS_FILE)) fs.writeFileSync(CHARACTERS_FILE, '[]');
-if (!fs.existsSync(LISTS_FILE)) fs.writeFileSync(LISTS_FILE, '["Misc"]');
+if (!fs.existsSync(LISTS_FILE)) fs.writeFileSync(LISTS_FILE, '["お気に入り"]');
 
 // Storage for images
 const storage = multer.diskStorage({
@@ -153,18 +153,84 @@ app.put('/api/lists/:name', (req, res) => {
     lists = lists.map((l: string) => l === oldName ? newName : l);
     fs.writeFileSync(LISTS_FILE, JSON.stringify(lists, null, 2));
 
+    // Sync Characters
     let chars = JSON.parse(fs.readFileSync(CHARACTERS_FILE, 'utf8'));
-    chars = chars.map((c: any) => c.series === oldName ? { ...c, series: newName } : c);
+    chars = chars.map((c: any) => {
+        let updated = false;
+        if (c.series === oldName) {
+            c.series = newName;
+            updated = true;
+        }
+        if (c.favoriteLists && Array.isArray(c.favoriteLists)) {
+            if (c.favoriteLists.includes(oldName)) {
+                c.favoriteLists = c.favoriteLists.map((l: string) => l === oldName ? newName : l);
+                updated = true;
+            }
+        }
+        return c;
+    });
     fs.writeFileSync(CHARACTERS_FILE, JSON.stringify(chars, null, 2));
 
-    res.json({ lists });
+    // Sync LoRA Meta
+    const loraMeta = readLoraMeta();
+    let loraMetaChanged = false;
+    Object.keys(loraMeta).forEach(path => {
+        if (loraMeta[path].favoriteLists && Array.isArray(loraMeta[path].favoriteLists)) {
+            if (loraMeta[path].favoriteLists.includes(oldName)) {
+                loraMeta[path].favoriteLists = loraMeta[path].favoriteLists.map((l: string) => l === oldName ? newName : l);
+                loraMetaChanged = true;
+            }
+        }
+    });
+    if (loraMetaChanged) writeLoraMeta(loraMeta);
+
+    // Sync config's default list if it was the old name
+    const config = readConfig();
+    if (config.defaultFavoriteList === oldName) {
+        config.defaultFavoriteList = newName;
+        writeConfig(config);
+    }
+
+    res.json({ lists, config }); // Return updated lists and config for full data refresh
 });
 
 app.delete('/api/lists/:name', (req, res) => {
+    const targetName = req.params.name;
     let lists = JSON.parse(fs.readFileSync(LISTS_FILE, 'utf8'));
-    lists = lists.filter((l: string) => l !== req.params.name);
+    lists = lists.filter((l: string) => l !== targetName);
     fs.writeFileSync(LISTS_FILE, JSON.stringify(lists, null, 2));
-    res.json({ lists });
+
+    // Cleanup Characters
+    let chars = JSON.parse(fs.readFileSync(CHARACTERS_FILE, 'utf8'));
+    chars = chars.map((c: any) => {
+        if (c.favoriteLists && Array.isArray(c.favoriteLists)) {
+            c.favoriteLists = c.favoriteLists.filter((l: string) => l !== targetName);
+        }
+        return c;
+    });
+    fs.writeFileSync(CHARACTERS_FILE, JSON.stringify(chars, null, 2));
+
+    // Cleanup LoRA Meta
+    const loraMeta = readLoraMeta();
+    let loraMetaChanged = false;
+    Object.keys(loraMeta).forEach(path => {
+        if (loraMeta[path].favoriteLists && Array.isArray(loraMeta[path].favoriteLists)) {
+            if (loraMeta[path].favoriteLists.includes(targetName)) {
+                loraMeta[path].favoriteLists = loraMeta[path].favoriteLists.filter((l: string) => l !== targetName);
+                loraMetaChanged = true;
+            }
+        }
+    });
+    if (loraMetaChanged) writeLoraMeta(loraMeta);
+
+    // Cleanup config's default list if it was the target name
+    const config = readConfig();
+    if (config.defaultFavoriteList === targetName) {
+        config.defaultFavoriteList = ''; // Clear default if the list is deleted
+        writeConfig(config);
+    }
+
+    res.json({ lists, config }); // Return updated lists and config for full data refresh
 });
 
 app.get('/api/situations', (req, res) => {

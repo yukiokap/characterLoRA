@@ -22,9 +22,8 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
     const variations = character.variations || [];
     const currentVar = variations[activeVarIndex] || variations[0] || { name: 'Default', image: null, prompts: [] };
 
-    // Default Fav List
-    const defaultFav = "お気に入り";
-    const isDefaultFav = character.favoriteLists?.includes(defaultFav);
+    // Check if in any favorite list
+    const isInAnyList = (character.favoriteLists?.length ?? 0) > 0;
 
     // Safety check
     if (!currentVar) return null;
@@ -58,7 +57,12 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
     const handleMouseLeave = () => {
         timeoutRef.current = setTimeout(() => {
             setShowFavMenu(false);
-        }, 150);
+        }, 300);
+    };
+
+    const toggleFavMenu = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowFavMenu(!showFavMenu);
     };
 
     return (
@@ -73,7 +77,7 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                 flex: 1,
                 minHeight: '450px', // Fixed minimum height for consistency
                 maxHeight: '450px',  // Fixed maximum height for consistency
-                zIndex: showFavMenu ? 50 : 1
+                zIndex: showFavMenu ? 100 : 1
             }}
         >
 
@@ -185,17 +189,17 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                         onMouseLeave={handleMouseLeave}
                     >
                         <button
-                            onClick={() => onToggleFav(character, defaultFav)}
+                            onClick={toggleFavMenu}
                             style={{
                                 padding: '6px',
                                 background: 'rgba(0,0,0,0.6)',
                                 borderRadius: '50%',
-                                color: isDefaultFav ? '#ef4444' : 'white',
+                                color: isInAnyList ? '#ef4444' : 'white',
                                 border: 'none',
                                 cursor: 'pointer'
                             }}
                         >
-                            <Heart size={16} fill={isDefaultFav ? "currentColor" : "none"} />
+                            <Heart size={16} fill={isInAnyList ? "currentColor" : "none"} />
                         </button>
 
                         {showFavMenu && (
@@ -248,7 +252,7 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                     <button
                         onClick={() => onDelete(character.id)}
                         title="削除"
-                        style={{ padding: '6px', background: 'rgba(220, 38, 38, 0.8)', borderRadius: '50%', color: 'white', border: 'none', cursor: 'pointer' }}
+                        style={{ padding: '6px', background: 'rgba(239, 68, 68, 0.8)', borderRadius: '50%', color: 'white', border: 'none', cursor: 'pointer' }}
                     >
                         <Trash2 size={16} />
                     </button>

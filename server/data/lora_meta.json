@@ -27,7 +27,8 @@
   "character/vtuber/hololive/blue journey (hololive).safetensors": {
     "triggerWords": "",
     "civitaiUrl": "https://civitai.com/models/1658118",
-    "order": 0
+    "order": 0,
+    "favoriteLists": []
   },
   "434/Bukkake_Adriana_IL_V1.safetensors": {
     "triggerWords": "",
@@ -454,7 +455,6 @@
   },
   "LoRA/character/geme/DQ/dqbianca-illu-nvwls-v1.safetensors": {
     "favoriteLists": [
-      "Misc",
       "お気に入り"
     ]
   },
@@ -473,13 +473,10 @@
     }
   },
   "LoRA/434/XXX_GangBang_IL_V1.safetensors": {
-    "favoriteLists": [
-      "Misc"
-    ]
+    "favoriteLists": []
   },
   "LoRA/tool/sound_effects.safetensors": {
     "favoriteLists": [
-      "Misc",
       "お気に入り"
     ]
   },
@@ -760,7 +757,10 @@
     "order": 3
   },
   "character/anime/corrector yui-ill-01.safetensors": {
-    "order": 6
+    "order": 6,
+    "favoriteLists": [
+      "お気に入り"
+    ]
   },
   "character/anime/fujiwara_chika_v2.safetensors": {
     "order": 18
@@ -857,7 +857,8 @@
       "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/02e555ab-d655-47a6-a7ad-c220b8f8a333/original=true/104304346.jpeg",
       "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/246f305e-957d-4d26-b42a-bc1a7f4594c9/original=true/104324699.jpeg"
     ],
-    "order": 2
+    "order": 2,
+    "favoriteLists": []
   },
   "character/anime/セーラームーン/sailor_venus_animaginexl_v2.safetensors": {
     "order": 5

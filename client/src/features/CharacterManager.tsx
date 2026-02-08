@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, forwardRef } from 'react';
 import { getCharacters, createCharacter, updateCharacter, deleteCharacter, getLists, saveLists, reorderCharacters, renameList, deleteList } from '../api';
 import { CharacterCard } from '../components/CharacterCard';
 import { CharacterForm } from '../components/CharacterForm';
-import { Search, Plus, Filter, Folder, Hash, Heart, Copy, ZoomIn, ZoomOut, Edit2, Trash2 } from 'lucide-react';
+import { Search, Plus, Filter, Folder, Hash, Heart, Copy, ZoomIn, ZoomOut, Edit2, Trash2, X, Loader2 } from 'lucide-react';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { type Character } from '../types';
 import { arrayMove } from '@dnd-kit/sortable';
@@ -138,7 +138,7 @@ export const CharacterManager = () => {
             const updatedLists = await renameList(oldName, newName);
             setFavLists(updatedLists);
             if (selectedFavList === oldName) setSelectedFavList(newName);
-            fetchCharacters();
+            fetchData();
         }
     };
 
@@ -150,7 +150,7 @@ export const CharacterManager = () => {
             const updatedLists = await deleteList(name);
             setFavLists(updatedLists);
             if (selectedFavList === name) setSelectedFavList(null);
-            fetchCharacters();
+            fetchData();
         } catch (e) {
             alert('削除できませんでした。デフォルトのリストは削除できない場合があります。');
         }
@@ -162,8 +162,18 @@ export const CharacterManager = () => {
         const newLists = isIncluded
             ? currentLists.filter(l => l !== listName)
             : [...currentLists, listName];
-        await updateCharacter(char.id, { favoriteLists: newLists });
-        fetchCharacters();
+
+        // Optimistic update for UI feel
+        setCharacters(prev => prev.map(c => c.id === char.id ? { ...c, favoriteLists: newLists } : c));
+
+        try {
+            await updateCharacter(char.id, { favoriteLists: newLists });
+            // Fully refresh to ensure consistency
+            fetchData();
+        } catch (e) {
+            fetchData(); // Rollback/Refresh on error
+            alert('お気に入りの更新に失敗しました');
+        }
     };
 
     return (
@@ -173,24 +183,43 @@ export const CharacterManager = () => {
             {/* Sidebar */}
             <aside className="sidebar">
 
-                <div style={{ position: 'relative', marginBottom: '1rem' }}>
-                    <Search size={18} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+                <div style={{ position: 'relative' }}>
+                    <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)', opacity: 0.7 }} />
                     <input
                         type="text"
-                        placeholder="検索..."
+                        placeholder="キャラクターを検索..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{ paddingLeft: '2.2rem' }}
+                        style={{
+                            width: '100%',
+                            padding: '0.6rem 2.8rem 0.6rem 2.8rem',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem',
+                            background: 'rgba(0, 0, 0, 0.2)',
+                            border: '1px solid var(--border)',
+                            color: 'white'
+                        }}
                     />
+                    {searchQuery && (
+                        <button
+                            onClick={() => setSearchQuery('')}
+                            style={{
+                                position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                                background: 'transparent', border: 'none', color: 'var(--text-secondary)',
+                                cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center'
+                            }}
+                        >
+                            <X size={14} />
+                        </button>
+                    )}
                 </div>
 
-                {/* Favorites */}
-                <div style={{ marginTop: '1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Heart size={14} /> お気に入り
+                <div style={{ display: 'flex', flexDirection: 'column', flex: selectedFavList ? 1 : 'none', minHeight: 0, paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Heart size={14} style={{ verticalAlign: 'middle' }} /> お気に入り
                         </div>
-                        <button onClick={handleAddList} style={{ background: 'transparent', padding: '2px', border: 'none' }} title="リスト追加">
+                        <button onClick={handleAddList} style={{ background: 'transparent', padding: '2px', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }} title="リスト追加">
                             <Plus size={14} />
                         </button>
                     </div>
@@ -200,53 +229,61 @@ export const CharacterManager = () => {
                                 key={list}
                                 onMouseEnter={() => setHoveredList(list)}
                                 onMouseLeave={() => setHoveredList(null)}
-                                style={{ position: 'relative' }}
+                                className="sidebar-item-row"
+                                style={{ position: 'relative', borderRadius: '6px' }}
                             >
                                 <button
                                     onClick={() => {
-                                        setSelectedFavList(selectedFavList === list ? null : list);
-                                        if (selectedFavList !== list) setSelectedSeries(null); // Clear series
+                                        const isSelecting = selectedFavList !== list;
+                                        setSelectedFavList(isSelecting ? list : null);
+                                        if (isSelecting) setSelectedSeries(null); // Clear series when selecting a list
                                     }}
                                     style={{
                                         textAlign: 'left', background: selectedFavList === list ? 'rgba(239, 68, 68, 0.2)' : 'transparent',
                                         border: 'none', padding: '0.5rem', borderRadius: '6px',
                                         color: selectedFavList === list ? '#fca5a5' : 'var(--text-secondary)',
-                                        display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%'
+                                        display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%',
+                                        cursor: 'pointer'
                                     }}
                                 >
                                     <Heart size={14} fill={selectedFavList === list ? "currentColor" : "none"} />
                                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{list}</span>
                                 </button>
 
-                                {/* Actions (visible on hover) */}
-                                {hoveredList === list && list !== 'お気に入り' && (
-                                    <div style={{
+                                {/* Actions (always visible but subtle) */}
+                                {list !== 'お気に入り' && (
+                                    <div className="hover-actions-container" style={{
                                         position: 'absolute', right: '5px', top: '50%', transform: 'translateY(-50%)',
-                                        display: 'flex', gap: '4px', background: '#1e293b', padding: '2px', borderRadius: '4px'
+                                        background: '#1e293b', padding: '2px', borderRadius: '4px',
+                                        border: '1px solid rgba(255,255,255,0.1)'
                                     }}>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleRenameList(list); }}
-                                            style={{ padding: '2px', color: '#94a3b8', background: 'transparent', border: 'none' }} title="名前変更"
+                                            className="action-icon-btn" title="名前変更"
                                         >
-                                            <Edit2 size={12} />
+                                            <Edit2 size={12} style={{ color: '#94a3b8' }} />
                                         </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDeleteList(list); }}
-                                            style={{ padding: '2px', color: '#ef4444', background: 'transparent', border: 'none' }} title="削除"
+                                            className="action-icon-btn" title="削除"
                                         >
-                                            <Trash2 size={12} />
+                                            <Trash2 size={12} style={{ color: '#ef4444' }} />
                                         </button>
                                     </div>
                                 )}
                             </div>
                         ))}
+                        {favLists.length === 0 && (
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', opacity: 0.5, padding: '0.5rem 0.8rem' }}>
+                                リストがありません
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Series */}
-                <div style={{ marginTop: '1.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600 }}>
-                        <Filter size={14} /> 作品・シリーズ
+                <div style={{ display: 'flex', flexDirection: 'column', flex: selectedSeries ? 1 : 1, minHeight: 0, overflowY: 'auto', paddingTop: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--text-secondary)', marginBottom: '0.5rem', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <Filter size={14} style={{ verticalAlign: 'middle' }} /> 作品・シリーズ
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                         <button
@@ -281,16 +318,17 @@ export const CharacterManager = () => {
 
                 <div style={{ marginTop: 'auto' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
-                        <Hash size={14} /> 全 {characters.length} キャラクター
+                        <Hash size={14} /> 合計 {characters.length} キャラクター
                     </div>
                 </div>
             </aside>
 
             {/* Main Content */}
             <main className="main-content" ref={containerRef}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    {/* Left Section: Title & Copy */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <h2 style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0 }}>
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>
                             {selectedFavList ? `♥ ${selectedFavList}` : selectedSeries || 'すべてのキャラクター'}
                         </h2>
                         {filteredCharacters.length > 0 && (
@@ -309,20 +347,21 @@ export const CharacterManager = () => {
                                 }}
                                 title="表示中の全キャラのプロンプトをコピー"
                                 style={{
-                                    background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)',
+                                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
                                     padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer',
-                                    display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)'
+                                    display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-secondary)',
+                                    fontSize: '0.85rem'
                                 }}
                             >
-                                <Copy size={16} /> 全コピー
+                                <Copy size={14} /> 全コピー
                             </button>
                         )}
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                        {/* Scale Slider */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 1rem', borderRadius: '20px' }}>
-                            <ZoomOut size={16} color="var(--text-secondary)" />
+                    {/* Right Section: View Settings & Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.4rem 0.8rem', borderRadius: '20px' }}>
+                            <ZoomOut size={14} color="var(--text-secondary)" />
                             <input
                                 type="range"
                                 min="0.3"
@@ -330,20 +369,21 @@ export const CharacterManager = () => {
                                 step="0.1"
                                 value={cardScale}
                                 onChange={e => setCardScale(parseFloat(e.target.value))}
-                                style={{ width: '120px', accentColor: 'var(--accent)', cursor: 'pointer' }}
+                                style={{ width: '80px', accentColor: 'var(--accent)', cursor: 'pointer' }}
                             />
-                            <ZoomIn size={16} color="var(--text-secondary)" />
+                            <ZoomIn size={14} color="var(--text-secondary)" />
                         </div>
 
-                        <button className="btn-primary" onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Plus size={20} /> 新規追加
+                        <button className="btn-primary" onClick={handleAdd} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.5rem 1rem' }}>
+                            <Plus size={18} /> 新規追加
                         </button>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
-                        読み込み中...
+                    <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                        <Loader2 size={32} className="animate-spin" style={{ opacity: 0.5 }} />
+                        <span>読み込み中...</span>
                     </div>
                 ) : error ? (
                     <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--danger)' }}>
