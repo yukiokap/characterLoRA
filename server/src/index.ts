@@ -497,66 +497,37 @@ app.get('/api/loras/model-description', async (req, res) => {
     if (!modelId) return res.status(400).json({ error: 'Missing modelId' });
 
     const config = readConfig();
-    let localInfo = null;
+    let localInfo: any = null;
 
-    // 1. Try to Load from Local .civitai.info if not refreshing
-    if (loraPath && !req.query.refresh) {
+    // Load Local Info as potential fallback
+    if (loraPath) {
         const fullLoraPath = path.join(config.loraDir, loraPath);
         const infoFile = path.join(path.dirname(fullLoraPath), path.parse(fullLoraPath).name + '.civitai.info');
-        if (fs.existsSync(infoFile)) {
+        const altInfoFile = path.join(path.dirname(fullLoraPath), path.parse(fullLoraPath).name + '.info');
+        const targetInfoFile = fs.existsSync(infoFile) ? infoFile : (fs.existsSync(altInfoFile) ? altInfoFile : null);
+        if (targetInfoFile) {
             try {
-                localInfo = JSON.parse(fs.readFileSync(infoFile, 'utf8'));
+                localInfo = JSON.parse(fs.readFileSync(targetInfoFile, 'utf8'));
             } catch (e) { }
         }
     }
 
-    if (localInfo && Object.keys(localInfo).length > 5 && !req.query.refresh) {
-        // Construct combined description from local info
-        let combinedDesc = localInfo.description || '';
-        if (localInfo.modelVersions && localInfo.modelVersions.length > 0) {
-            const v = localInfo.modelVersions[0];
-            if (v.description && v.description !== localInfo.description) {
-                combinedDesc += (combinedDesc ? '<hr/>' : '') + `<h4>Version: ${v.name}</h4>` + v.description;
-            }
-        }
-        const images = localInfo.modelVersions?.[0]?.images || localInfo.images || [];
-        return res.json({
-            description: combinedDesc,
-            isLocal: true,
-            images: images
-        });
-    }
-
-    // 2. Fallback to API/Cache
-    if (DESCRIPTION_CACHE[modelId] && !req.query.refresh) {
-        return res.json({
-            description: DESCRIPTION_CACHE[modelId].description,
-            images: DESCRIPTION_CACHE[modelId].images
-        });
-    }
-
-    try {
-        const response = await axios.get(`https://civitai.com/api/v1/models/${modelId}`, {
-            headers: { 'User-Agent': 'Mozilla/5.0' }
-        });
-
-        // Combined description logic
-        let combinedDesc = response.data.description || '';
-        const versions = response.data.modelVersions;
+    // Function to format response from info object
+    const formatInfoResponse = (info: any, isLocal: boolean) => {
+        let combinedDesc = info.description || '';
+        const versions = info.modelVersions || [];
         if (versions && versions.length > 0) {
             versions.forEach((v: any) => {
-                if (v.description && v.description !== response.data.description) {
+                if (v.description && v.description !== info.description) {
                     combinedDesc += (combinedDesc ? '<hr/>' : '') + `<h4>Version: ${v.name}</h4>` + v.description;
                 }
             });
         }
-
-        // Final fallback if still empty
         if (!combinedDesc && versions && versions.length > 0) {
             const v = versions[0];
             combinedDesc = `
                 <div style="text-align:center;padding:1rem;">
-                    <p>Model found on Civitai, but no text description was provided.</p>
+                    <p>Model found, but no text description was provided.</p>
                     <p><strong>Base Model:</strong> ${v.baseModel || 'Unknown'}</p>
                     <p><strong>Created:</strong> ${v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'Unknown'}</p>
                     ${v.trainedWords?.length ? `<p><strong>Trained Words:</strong> ${v.trainedWords.join(', ')}</p>` : ''}
@@ -564,7 +535,35 @@ app.get('/api/loras/model-description', async (req, res) => {
             `;
         }
 
-        // 3. Save to Local .civitai.info AUTOMATICALLY
+        const images = versions?.[0]?.images || info.images || [];
+        const trainedWords = versions?.[0]?.trainedWords || info.trainedWords || [];
+
+        return {
+            description: combinedDesc,
+            images,
+            trainedWords,
+            isLocal,
+            fullData: info // Return full data for debugging/completeness
+        };
+    };
+
+    // If not refreshing and we have good local data, use it
+    if (!req.query.refresh && localInfo && Object.keys(localInfo).length > 5) {
+        return res.json(formatInfoResponse(localInfo, true));
+    }
+
+    // Fallback to API/Cache
+    if (!req.query.refresh && DESCRIPTION_CACHE[modelId]) {
+        return res.json(DESCRIPTION_CACHE[modelId]);
+    }
+
+    try {
+        const response = await axios.get(`https://civitai.com/api/v1/models/${modelId}`, {
+            headers: { 'User-Agent': 'Mozilla/5.0' },
+            timeout: 5000
+        });
+
+        // Save to Local .civitai.info AUTOMATICALLY
         if (loraPath) {
             const fullLoraPath = path.join(config.loraDir, loraPath);
             const infoFile = path.join(path.dirname(fullLoraPath), path.parse(fullLoraPath).name + '.civitai.info');
@@ -579,19 +578,17 @@ app.get('/api/loras/model-description', async (req, res) => {
             }
         }
 
-        const civImages = response.data.modelVersions?.[0]?.images || [];
-        if (combinedDesc || civImages.length > 0) {
-            DESCRIPTION_CACHE[modelId] = { description: combinedDesc, images: civImages };
-            res.json({
-                description: combinedDesc,
-                isLocal: false,
-                images: civImages
-            });
-        } else {
-            res.status(404).json({ error: 'Not found' });
-        }
+        const result = formatInfoResponse(response.data, false);
+        DESCRIPTION_CACHE[modelId] = result;
+        return res.json(result);
+
     } catch (e: any) {
-        res.status(500).json({ error: e.message });
+        console.error(`Civitai fetch failed for model ${modelId}:`, e.message);
+        // CRITICAL FALLBACK: If API fails (e.g. deleted from Civitai), use local info if we have it
+        if (localInfo) {
+            return res.json(formatInfoResponse(localInfo, true));
+        }
+        res.status(500).json({ error: e.message, isLocal: false });
     }
 });
 

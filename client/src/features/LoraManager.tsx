@@ -187,14 +187,36 @@ const TagSidebar = ({ file, meta, onUpdateMeta, onClose }: { file: LoraFile, met
     const [localTriggerWords, setLocalTriggerWords] = useState(meta?.triggerWords || '');
     const [includeLoraPrefix, setIncludeLoraPrefix] = useState(true);
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [civitaiTags, setCivitaiTags] = useState<string[]>(file.trainedWords || []);
+    const [isFetchingInfo, setIsFetchingInfo] = useState(false);
 
     const previewUrl = file.previewPath ? `/api/loras/image?path=${encodeURIComponent(file.previewPath)}&t=${file.mtime ? new Date(file.mtime).getTime() : ''}` : null;
 
-    const civitaiTags = file.trainedWords || [];
     const customTags = meta?.customTags || [];
 
     // Combine and remove duplicates
     const allSuggestions = Array.from(new Set([...civitaiTags, ...customTags]));
+
+    const fetchCivitaiInfo = async (forceRefresh = false) => {
+        const modelId = file.modelId || (meta?.civitaiUrl?.match(/models\/(\d+)/)?.[1]);
+        if (!modelId) return;
+
+        setIsFetchingInfo(true);
+        try {
+            const res = await api.get(`/loras/model-description?modelId=${modelId}&loraPath=${encodeURIComponent(file.path)}${forceRefresh ? '&refresh=true' : ''}`);
+            if (res.data.trainedWords) {
+                setCivitaiTags(res.data.trainedWords);
+            }
+        } catch (e) {
+            console.error("Failed to fetch Civitai info in sidebar", e);
+        } finally {
+            setIsFetchingInfo(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchCivitaiInfo();
+    }, [file.path, file.modelId]);
 
     useEffect(() => {
         setLocalTriggerWords(meta?.triggerWords || '');
@@ -304,9 +326,19 @@ const TagSidebar = ({ file, meta, onUpdateMeta, onClose }: { file: LoraFile, met
         }}>
             <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>Tags & Info</h3>
-                <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                    <X size={20} />
-                </button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <button
+                        onClick={() => fetchCivitaiInfo(true)}
+                        disabled={isFetchingInfo}
+                        style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
+                        title="Civitaiから再取得"
+                    >
+                        <RefreshCw size={16} className={isFetchingInfo ? 'spin' : ''} />
+                    </button>
+                    <button onClick={onClose} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                        <X size={20} />
+                    </button>
+                </div>
             </div>
 
             <div style={{ overflowY: 'auto', flex: 1, padding: '1rem' }}>
@@ -574,7 +606,7 @@ const TagSidebar = ({ file, meta, onUpdateMeta, onClose }: { file: LoraFile, met
                                                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px' }}>
                                                     <span style={{ fontWeight: meta?.tagImages?.[word] ? 600 : 400, wordBreak: 'break-all' }}>{word}</span>
                                                     {isCustom && <span style={{ fontSize: '0.6rem', background: 'rgba(56, 189, 248, 0.2)', color: '#7dd3fc', padding: '1px 4px', borderRadius: '3px', flexShrink: 0 }}>USER</span>}
-                                                    {file.trainedWords?.includes(word) && <span style={{ fontSize: '0.6rem', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '1px 4px', borderRadius: '3px', flexShrink: 0 }}>CIVITAI</span>}
+                                                    {civitaiTags.includes(word) && <span style={{ fontSize: '0.6rem', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '1px 4px', borderRadius: '3px', flexShrink: 0 }}>CIVITAI</span>}
                                                 </div>
                                             )}
                                         </div>
