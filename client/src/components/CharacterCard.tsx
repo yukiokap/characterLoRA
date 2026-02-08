@@ -66,12 +66,20 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="glass-panel"
-            style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%', flex: 1 }}
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                height: '100%',
+                flex: 1,
+                minHeight: '450px', // Fixed minimum height for consistency
+                maxHeight: '450px',  // Fixed maximum height for consistency
+                zIndex: showFavMenu ? 50 : 1
+            }}
         >
-            <div style={{ position: 'relative', background: '#000' }}>
 
+            <div style={{ position: 'relative', background: '#000', flex: '0 0 auto', borderTopLeftRadius: '11px', borderTopRightRadius: '11px' }}>
                 {/* Image Area */}
-                <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative' }}>
+                <div style={{ width: '100%', aspectRatio: '3/4', position: 'relative', overflow: 'hidden', borderTopLeftRadius: '11px', borderTopRightRadius: '11px' }}>
                     {currentVar.image ? (
                         <img src={currentVar.image} alt={character.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
@@ -79,6 +87,38 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                             <span style={{ fontSize: '3rem' }}>?</span>
                         </div>
                     )}
+
+                    {/* Character Name & Series Overlay (Bottom) */}
+                    <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 70%, transparent 100%)',
+                        padding: '2rem 1rem 0.75rem 1rem'
+                    }}>
+                        <h3 style={{
+                            margin: 0,
+                            fontSize: '1.1rem',
+                            fontWeight: 700,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            color: 'white',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                        }}>
+                            {character.name}
+                        </h3>
+                        <div style={{ marginTop: '0.25rem' }}>
+                            <span className="badge" style={{
+                                background: 'rgba(168, 85, 247, 0.3)',
+                                color: '#e9d5ff',
+                                fontSize: '0.75rem'
+                            }}>
+                                {character.series}
+                            </span>
+                        </div>
+                    </div>
 
                     {/* Navigation Arrows */}
                     {variations.length > 1 && (
@@ -88,7 +128,7 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                                 style={{
                                     position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)',
                                     background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
-                                    padding: '8px', color: 'white'
+                                    padding: '8px', color: 'white', cursor: 'pointer'
                                 }}
                             >
                                 <ChevronLeft size={20} />
@@ -98,34 +138,25 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                                 style={{
                                     position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
                                     background: 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%',
-                                    padding: '8px', color: 'white'
+                                    padding: '8px', color: 'white', cursor: 'pointer'
                                 }}
                             >
                                 <ChevronRight size={20} />
                             </button>
 
                             {/* Dots Indicator */}
-                            <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                            <div style={{ position: 'absolute', top: '10px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '6px' }}>
                                 {variations.map((_, i) => (
                                     <div key={i} style={{
                                         width: '6px', height: '6px', borderRadius: '50%',
                                         background: i === activeVarIndex ? 'white' : 'rgba(255,255,255,0.4)',
-                                        transition: 'background 0.3s'
+                                        transition: 'background 0.3s',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
                                     }} />
                                 ))}
                             </div>
                         </>
                     )}
-
-                    {/* Variation Name Badge */}
-                    <div style={{
-                        position: 'absolute', bottom: '10px', left: '10px',
-                        background: 'rgba(0,0,0,0.7)', color: 'white',
-                        padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem',
-                        backdropFilter: 'blur(4px)'
-                    }}>
-                        {currentVar.name}
-                    </div>
                 </div>
 
                 {/* Top Buttons (Edit/Delete/Copy) */}
@@ -159,7 +190,9 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                                 padding: '6px',
                                 background: 'rgba(0,0,0,0.6)',
                                 borderRadius: '50%',
-                                color: isDefaultFav ? '#ef4444' : 'white'
+                                color: isDefaultFav ? '#ef4444' : 'white',
+                                border: 'none',
+                                cursor: 'pointer'
                             }}
                         >
                             <Heart size={16} fill={isDefaultFav ? "currentColor" : "none"} />
@@ -181,7 +214,7 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                                         <div
                                             key={list}
                                             onClick={(e) => {
-                                                e.stopPropagation(); // prevent modal close etc
+                                                e.stopPropagation();
                                                 onToggleFav(character, list);
                                             }}
                                             style={{
@@ -201,56 +234,92 @@ export const CharacterCard: React.FC<Props> = ({ character, favLists, activeVarI
                     <button
                         onClick={handleCopy}
                         title="プロンプトをコピー"
-                        style={{ padding: '6px', background: 'rgba(0,0,0,0.6)', borderRadius: '50%' }}
+                        style={{ padding: '6px', background: 'rgba(0,0,0,0.6)', borderRadius: '50%', border: 'none', cursor: 'pointer', color: 'white' }}
                     >
                         {copied ? <Check size={16} color="#4ade80" /> : <Copy size={16} />}
                     </button>
                     <button
                         onClick={() => onEdit(character)}
                         title="編集"
-                        style={{ padding: '6px', background: 'rgba(0,0,0,0.6)', borderRadius: '50%' }}
+                        style={{ padding: '6px', background: 'rgba(0,0,0,0.6)', borderRadius: '50%', border: 'none', cursor: 'pointer', color: 'white' }}
                     >
                         <Edit2 size={16} />
                     </button>
                     <button
                         onClick={() => onDelete(character.id)}
                         title="削除"
-                        style={{ padding: '6px', background: 'rgba(220, 38, 38, 0.8)', borderRadius: '50%', color: 'white' }}
+                        style={{ padding: '6px', background: 'rgba(220, 38, 38, 0.8)', borderRadius: '50%', color: 'white', border: 'none', cursor: 'pointer' }}
                     >
                         <Trash2 size={16} />
                     </button>
                 </div>
             </div>
 
-            {/* Info Area */}
-            <div style={{ padding: '1rem', flex: 1 }}>
-                <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem' }}>{character.name}</h3>
-                <div style={{ marginBottom: '0.5rem' }}>
-                    <span className="badge" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#d8b4fe' }}>
-                        {character.series}
-                    </span>
+            {/* Variations List - Scrollable */}
+            <div style={{
+                padding: '0.75rem 1rem',
+                flex: '1 1 auto',
+                overflowY: 'auto',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                maxHeight: '120px', // Limit height for scrolling
+                borderBottomLeftRadius: '11px',
+                borderBottomRightRadius: '11px'
+            }}>
+                <div style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--text-secondary)',
+                    marginBottom: '0.5rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                }}>
+                    衣装バリエーション ({variations.length})
                 </div>
-
-                {/* Show combined tags preview */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                    {/* Base tags in one color */}
-                    {character.basePrompts?.slice(0, 3).map((tag, i) => (
-                        <span key={`base-${i}`} className="badge" style={{ background: 'rgba(56, 189, 248, 0.2)', color: '#7dd3fc' }}>
-                            {tag}
-                        </span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    {variations.map((variant, idx) => (
+                        <div
+                            key={idx}
+                            onClick={() => onVarChange(idx)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '0.4rem 0.6rem',
+                                borderRadius: '6px',
+                                background: idx === activeVarIndex ? 'rgba(129, 140, 248, 0.2)' : 'rgba(255,255,255,0.05)',
+                                border: idx === activeVarIndex ? '1px solid rgba(129, 140, 248, 0.4)' : '1px solid transparent',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                fontSize: '0.85rem'
+                            }}
+                            onMouseEnter={(e) => {
+                                if (idx !== activeVarIndex) {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                                }
+                            }}
+                            onMouseLeave={(e) => {
+                                if (idx !== activeVarIndex) {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                                }
+                            }}
+                        >
+                            <div style={{
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                background: idx === activeVarIndex ? 'var(--accent)' : 'rgba(255,255,255,0.3)',
+                                flexShrink: 0
+                            }} />
+                            <span style={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                                color: idx === activeVarIndex ? 'white' : 'var(--text-secondary)'
+                            }}>
+                                {variant.name}
+                            </span>
+                        </div>
                     ))}
-                    {/* Variation tags in another */}
-                    {currentVar.prompts?.slice(0, 3).map((tag, i) => (
-                        <span key={`var-${i}`} className="badge">
-                            {tag}
-                        </span>
-                    ))}
-
-                    {(character.basePrompts?.length || 0) + (currentVar.prompts?.length || 0) > 6 && (
-                        <span className="badge" style={{ background: 'transparent', color: '#94a3b8' }}>
-                            ...
-                        </span>
-                    )}
                 </div>
             </div>
         </motion.div>

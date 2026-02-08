@@ -1767,6 +1767,22 @@ export const LoraManager = () => {
         return groups;
     }, [includeSubfolders, sortedFiles]);
 
+    // Create flat array with headers for virtualization
+    type VirtualItem =
+        | { type: 'header'; folderPath: string; count: number }
+        | { type: 'file'; file: LoraFile };
+
+    const flatItemsWithHeaders = useMemo(() => {
+        if (!includeSubfolders || !isGrouped || showDuplicatesOnly) return [];
+
+        const items: VirtualItem[] = [];
+        Object.entries(groupedFiles).forEach(([folderPath, files]) => {
+            items.push({ type: 'header', folderPath, count: files.length });
+            files.forEach(file => items.push({ type: 'file', file }));
+        });
+        return items;
+    }, [includeSubfolders, isGrouped, showDuplicatesOnly, groupedFiles]);
+
     const gridComponents = useMemo(() => ({
         List: React.forwardRef(({ style, children, ...props }: any, ref) => (
             <div
@@ -2175,71 +2191,88 @@ export const LoraManager = () => {
                             ))}
                         </div>
                     ) : (includeSubfolders && isGrouped) ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                            {Object.entries(groupedFiles).map(([folderPath, groupFiles]) => (
-                                <div key={folderPath}>
-                                    <div style={{
-                                        display: 'flex', alignItems: 'center', gap: '0.5rem',
-                                        padding: '0.5rem 0', borderBottom: '1px solid rgba(255,255,255,0.1)',
-                                        marginBottom: '1rem', color: 'var(--accent)', fontWeight: 'bold'
-                                    }}>
-                                        <Folder size={16} /> {folderPath}
-                                        <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: 'normal' }}>({groupFiles.length} files)</span>
+                        <VirtuosoGrid
+                            style={{ height: '100%' }}
+                            customScrollParent={loraContainerRef.current || undefined}
+                            totalCount={flatItemsWithHeaders.length}
+                            components={gridComponents}
+                            itemContent={(index) => {
+                                const item = flatItemsWithHeaders[index];
+                                if (!item) return null;
+
+                                if (item.type === 'header') {
+                                    return (
+                                        <div style={{
+                                            gridColumn: '1 / -1',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '0.5rem',
+                                            padding: '1.5rem 0.5rem 0.5rem 0.5rem',
+                                            marginTop: index === 0 ? 0 : '1.5rem',
+                                            borderBottom: '1px solid rgba(255,255,255,0.1)',
+                                            marginBottom: '0.5rem',
+                                            color: 'var(--accent)',
+                                            fontWeight: 'bold',
+                                            background: 'rgba(15, 23, 42, 0.95)',
+                                            backdropFilter: 'blur(10px)',
+                                            position: 'sticky',
+                                            top: 0,
+                                            zIndex: 10,
+                                            borderRadius: '4px'
+                                        }}>
+                                            <Folder size={16} /> {item.folderPath}
+                                            <span style={{ fontSize: '0.8rem', opacity: 0.5, fontWeight: 'normal' }}>({item.count} files)</span>
+                                        </div>
+                                    );
+                                }
+
+                                const file = item.file;
+                                return (
+                                    <div
+                                        onDragOver={sortMode === 'custom' ? (e) => {
+                                            e.preventDefault();
+                                            e.currentTarget.style.opacity = '1';
+                                            e.currentTarget.style.border = '2px solid var(--accent)';
+                                            e.currentTarget.style.borderRadius = '8px';
+                                        } : undefined}
+                                        onDragLeave={(e) => {
+                                            e.currentTarget.style.opacity = '1';
+                                            e.currentTarget.style.border = '2px solid transparent';
+                                        }}
+                                        onDrop={(e) => {
+                                            if (sortMode !== 'custom') return;
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            e.currentTarget.style.opacity = '1';
+                                            e.currentTarget.style.border = '2px solid transparent';
+                                            const sourcePath = e.dataTransfer.getData('sourcePath');
+                                            const isBulk = e.dataTransfer.getData('isBulk') === 'true';
+                                            if (sourcePath && !isSamePath(sourcePath, file.path)) {
+                                                handleReorder(sourcePath, file.path, isBulk);
+                                            }
+                                        }}
+                                        style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
+                                    >
+                                        <LoraCard
+                                            key={file.path}
+                                            file={file}
+                                            meta={getMetaValue(file.path)}
+                                            favLists={favLists}
+                                            onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [normalizePath(file.path)]: newMeta }))}
+                                            onShowTags={() => setSelectedLoraForTags(file)}
+                                            onShowDescription={() => handleShowDescription(file)}
+                                            onToggleFav={handleToggleLoraFav}
+                                            onDelete={handleFetchWithDelay}
+                                            scale={deferredCardScale}
+                                            showPath={false}
+                                            isSelected={selectedPaths.includes(file.path)}
+                                            onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
+                                            onRegisterCharacter={() => handleRegisterCharacter(file)}
+                                        />
                                     </div>
-                                    <div style={{
-                                        display: 'grid',
-                                        gridTemplateColumns: `repeat(auto-fill, minmax(${200 * deferredCardScale}px, 1fr))`,
-                                        gap: '1.5rem'
-                                    }}>
-                                        {groupFiles.map(file => (
-                                            <div
-                                                key={file.path}
-                                                onDragOver={sortMode === 'custom' ? (e) => {
-                                                    e.preventDefault();
-                                                    e.currentTarget.style.opacity = '1';
-                                                    e.currentTarget.style.border = '2px solid var(--accent)';
-                                                    e.currentTarget.style.borderRadius = '8px';
-                                                } : undefined}
-                                                onDragLeave={(e) => {
-                                                    e.currentTarget.style.opacity = '1';
-                                                    e.currentTarget.style.border = '2px solid transparent';
-                                                }}
-                                                onDrop={(e) => {
-                                                    if (sortMode !== 'custom') return;
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    e.currentTarget.style.opacity = '1';
-                                                    e.currentTarget.style.border = '2px solid transparent';
-                                                    const sourcePath = e.dataTransfer.getData('sourcePath');
-                                                    const isBulk = e.dataTransfer.getData('isBulk') === 'true';
-                                                    if (sourcePath && !isSamePath(sourcePath, file.path)) {
-                                                        handleReorder(sourcePath, file.path, isBulk);
-                                                    }
-                                                }}
-                                                style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
-                                            >
-                                                <LoraCard
-                                                    key={file.path}
-                                                    file={file}
-                                                    meta={getMetaValue(file.path)}
-                                                    favLists={favLists}
-                                                    onUpdateMeta={(newMeta) => setMeta(prev => ({ ...prev, [normalizePath(file.path)]: newMeta }))}
-                                                    onShowTags={() => setSelectedLoraForTags(file)}
-                                                    onShowDescription={() => handleShowDescription(file)}
-                                                    onToggleFav={handleToggleLoraFav}
-                                                    onDelete={handleFetchWithDelay}
-                                                    scale={deferredCardScale}
-                                                    showPath={false} // Path is shown in header now
-                                                    isSelected={selectedPaths.includes(file.path)}
-                                                    onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
-                                                    onRegisterCharacter={() => handleRegisterCharacter(file)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                );
+                            }}
+                        />
                     ) : (
                         <VirtuosoGrid
                             style={{ height: '100%' }}

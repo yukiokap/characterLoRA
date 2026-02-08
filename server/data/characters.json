@@ -22,5 +22,45 @@
         "weight": 1
       }
     ]
+  },
+  {
+    "id": "dcb557bb-4e3e-494f-8bb8-fee36fcbac52",
+    "favoriteLists": [],
+    "basePrompts": [
+      "<lora:C-Control_Mashu_IlluXL:1>",
+      "twintails",
+      "brown hair",
+      "blunt bangs",
+      "green eyes",
+      "pointy ears",
+      "horns"
+    ],
+    "variations": [
+      {
+        "id": "v-1770516965634-0",
+        "name": "Default Outfit",
+        "prompts": [
+          "MashuC",
+          "hair flower",
+          "red choker",
+          "strapless",
+          "red tube top",
+          "frilled skirt",
+          "red skirt",
+          "red gloves",
+          "red thighhighs"
+        ],
+        "image": "http://localhost:3001/api/loras/image?path=character%2Fanime%2FC-Control_Mashu_IlluXL.preview.png"
+      }
+    ],
+    "series": "anime",
+    "notes": "LoRA: character/anime/C-Control_Mashu_IlluXL.safetensors",
+    "name": "C-Control_Mashu_IlluXL",
+    "loras": [
+      {
+        "path": "character/anime/C-Control_Mashu_IlluXL.safetensors",
+        "weight": 1
+      }
+    ]
   }
 ]
