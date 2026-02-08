@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useDeferredValue } from 'react';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { getLoraFiles, updateLoraMeta, updateLoraMetaBatch, createLoraFolder, getAppConfig, updateAppConfig, renameLoraNode, deleteLoraNode, moveLoraNode, moveLoraNodesBatch, uploadLoraPreview, getLists, saveLists, renameList, deleteList, uploadLoraTagImage, type LoraFile, type LoraMeta, api } from '../api';
 import { ChevronRight, ChevronDown, Folder, Search, RefreshCw, X, Plus, Globe, List, Copy, Heart, UserPlus, Sparkles, Users, Info, Trash2, ChevronLeft, Settings, Edit2, ZoomIn, ZoomOut } from 'lucide-react';
@@ -1162,6 +1162,7 @@ export const LoraManager = () => {
     const [bulkProgress, setBulkProgress] = useState<{ current: number, total: number, name: string, isAnalyzing?: boolean } | null>(null);
     const [isReordering, setIsReordering] = useState(false);
     const [cardScale, setCardScale] = useState(1);
+    const deferredCardScale = useDeferredValue(cardScale);
     const [includeSubfolders, setIncludeSubfolders] = useState(false);
     const [showDuplicatesOnly, setShowDuplicatesOnly] = useState(false);
     const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
@@ -1707,50 +1708,64 @@ export const LoraManager = () => {
         return () => window.removeEventListener('lora-bulk-move' as any, handler);
     }, [selectedPaths]);
 
-    const currentNode = findNode(files, currentPath);
-    const baseNodes = currentNode?.children || files;
-    const currentFiles = (includeSubfolders || showDuplicatesOnly) ? flattenFiles(baseNodes) : baseNodes;
+    const currentNode = useMemo(() => findNode(files, currentPath), [files, currentPath]);
+    const baseNodes = useMemo(() => currentNode?.children || files, [currentNode, files]);
 
-    const filteredFiles = currentFiles.filter(f => {
-        const fileMeta = getMetaValue(f.path);
-        const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesFavList = selectedFavList ? fileMeta?.favoriteLists?.includes(selectedFavList) : true;
-        return matchesSearch && matchesFavList;
-    });
+    const currentFiles = useMemo(
+        () => (includeSubfolders || showDuplicatesOnly) ? flattenFiles(baseNodes) : baseNodes,
+        [includeSubfolders, showDuplicatesOnly, baseNodes]
+    );
 
-    const duplicateSets = showDuplicatesOnly ? findDuplicateSets(filteredFiles) : [];
+    const filteredFiles = useMemo(() => {
+        return currentFiles.filter(f => {
+            const fileMeta = getMetaValue(f.path);
+            const matchesSearch = f.name.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesFavList = selectedFavList ? fileMeta?.favoriteLists?.includes(selectedFavList) : true;
+            return matchesSearch && matchesFavList;
+        });
+    }, [currentFiles, searchQuery, selectedFavList, meta]);
 
-    const sortedFiles = [...filteredFiles].sort((a, b) => {
-        if (a.type === 'directory' && b.type === 'file') return -1;
-        if (a.type === 'file' && b.type === 'directory') return 1;
+    const duplicateSets = useMemo(
+        () => showDuplicatesOnly ? findDuplicateSets(filteredFiles) : [],
+        [showDuplicatesOnly, filteredFiles]
+    );
 
-        // When including subfolders, primary sort is by folder path to enable grouping
-        if (includeSubfolders) {
-            const pathA = a.path.includes('/') ? a.path.substring(0, a.path.lastIndexOf('/')) : '';
-            const pathB = b.path.includes('/') ? b.path.substring(0, b.path.lastIndexOf('/')) : '';
-            if (pathA !== pathB) return pathA.localeCompare(pathB);
-        }
+    const sortedFiles = useMemo(() => {
+        return [...filteredFiles].sort((a, b) => {
+            if (a.type === 'directory' && b.type === 'file') return -1;
+            if (a.type === 'file' && b.type === 'directory') return 1;
 
-        // Within the same folder (or root), apply selected sort mode
-        if (sortMode === 'custom' && a.type === 'file' && b.type === 'file') {
-            const orderA = getMetaValue(a.path)?.order ?? 9999;
-            const orderB = getMetaValue(b.path)?.order ?? 9999;
-            if (orderA !== orderB) return orderA - orderB;
-        }
+            // When including subfolders, primary sort is by folder path to enable grouping
+            if (includeSubfolders) {
+                const pathA = a.path.includes('/') ? a.path.substring(0, a.path.lastIndexOf('/')) : '';
+                const pathB = b.path.includes('/') ? b.path.substring(0, b.path.lastIndexOf('/')) : '';
+                if (pathA !== pathB) return pathA.localeCompare(pathB);
+            }
 
-        return a.name.localeCompare(b.name);
-    });
+            // Within the same folder (or root), apply selected sort mode
+            if (sortMode === 'custom' && a.type === 'file' && b.type === 'file') {
+                const orderA = getMetaValue(a.path)?.order ?? 9999;
+                const orderB = getMetaValue(b.path)?.order ?? 9999;
+                if (orderA !== orderB) return orderA - orderB;
+            }
+
+            return a.name.localeCompare(b.name);
+        });
+    }, [filteredFiles, includeSubfolders, sortMode, meta]);
 
     // Group files by folder if in recursive mode
-    const groupedFiles: Record<string, LoraFile[]> = {};
-    if (includeSubfolders) {
-        sortedFiles.forEach(f => {
-            if (f.type !== 'file') return;
-            const path = f.path.split(/[\\\/]/).slice(0, -1).join('/') || 'Root';
-            if (!groupedFiles[path]) groupedFiles[path] = [];
-            groupedFiles[path].push(f);
-        });
-    }
+    const groupedFiles = useMemo(() => {
+        const groups: Record<string, LoraFile[]> = {};
+        if (includeSubfolders) {
+            sortedFiles.forEach(f => {
+                if (f.type !== 'file') return;
+                const path = f.path.split(/[\\\/]/).slice(0, -1).join('/') || 'Root';
+                if (!groups[path]) groups[path] = [];
+                groups[path].push(f);
+            });
+        }
+        return groups;
+    }, [includeSubfolders, sortedFiles]);
 
     const gridComponents = useMemo(() => ({
         List: React.forwardRef(({ style, children, ...props }: any, ref) => (
@@ -1760,7 +1775,7 @@ export const LoraManager = () => {
                 style={{
                     ...style,
                     display: 'grid',
-                    gridTemplateColumns: `repeat(auto-fill, minmax(${200 * cardScale}px, 1fr))`,
+                    gridTemplateColumns: `repeat(auto-fill, minmax(${200 * deferredCardScale}px, 1fr))`,
                     gap: '1.5rem',
                     padding: '1rem'
                 }}
@@ -1773,7 +1788,7 @@ export const LoraManager = () => {
                 {children}
             </div>
         )
-    }), [cardScale]);
+    }), [deferredCardScale]);
 
     const flatFiles = useMemo(() => sortedFiles.filter(f => f.type === 'file'), [sortedFiles]);
 
@@ -2173,7 +2188,7 @@ export const LoraManager = () => {
                                     </div>
                                     <div style={{
                                         display: 'grid',
-                                        gridTemplateColumns: `repeat(auto-fill, minmax(${200 * cardScale}px, 1fr))`,
+                                        gridTemplateColumns: `repeat(auto-fill, minmax(${200 * deferredCardScale}px, 1fr))`,
                                         gap: '1.5rem'
                                     }}>
                                         {groupFiles.map(file => (
@@ -2213,7 +2228,7 @@ export const LoraManager = () => {
                                                     onShowDescription={() => handleShowDescription(file)}
                                                     onToggleFav={handleToggleLoraFav}
                                                     onDelete={handleFetchWithDelay}
-                                                    scale={cardScale}
+                                                    scale={deferredCardScale}
                                                     showPath={false} // Path is shown in header now
                                                     isSelected={selectedPaths.includes(file.path)}
                                                     onToggleSelect={() => setSelectedPaths(prev => prev.includes(file.path) ? prev.filter(p => p !== file.path) : [...prev, file.path])}
@@ -2270,7 +2285,7 @@ export const LoraManager = () => {
                                             onShowDescription={() => handleShowDescription(file)}
                                             onToggleFav={handleToggleLoraFav}
                                             onDelete={handleFetchWithDelay}
-                                            scale={cardScale}
+                                            scale={deferredCardScale}
                                             showPath={includeSubfolders}
                                             isSelected={selectedPaths.includes(file.path)}
                                             selectedCount={selectedPaths.length}
