@@ -1,7 +1,10 @@
 [
   {
     "id": "78820ee1-6410-4ceb-a36f-2a6807f9cf37",
-    "favoriteLists": [],
+    "favoriteLists": [
+      "お気に入り",
+      "Misc"
+    ],
     "basePrompts": [
       "<lora:Romi_-_Catch_Teenieping___illustriousXL_:1>"
     ],
@@ -25,7 +28,9 @@
   },
   {
     "id": "dcb557bb-4e3e-494f-8bb8-fee36fcbac52",
-    "favoriteLists": [],
+    "favoriteLists": [
+      "お気に入り"
+    ],
     "basePrompts": [
       "<lora:C-Control_Mashu_IlluXL:1>",
       "twintails",

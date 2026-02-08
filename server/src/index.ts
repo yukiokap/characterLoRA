@@ -25,14 +25,20 @@ const port = 3001;
 app.use(cors());
 app.use(express.json());
 
-const DATA_DIR = path.join(__dirname, '../data');
+const IS_PKG = typeof (process as any).pkg !== 'undefined';
+// Use executable path if packaged, otherwise use project root
+const ROOT_DIR = IS_PKG ? path.dirname(process.execPath) : path.join(__dirname, '..');
+
+const DATA_DIR = path.join(ROOT_DIR, 'data');
+const UPLOAD_DIR = path.join(ROOT_DIR, 'uploads');
 const CHARACTERS_FILE = path.join(DATA_DIR, 'characters.json');
 const LISTS_FILE = path.join(DATA_DIR, 'lists.json');
 const LORA_META_FILE = path.join(DATA_DIR, 'lora_meta.json');
 const CONFIG_FILE = path.join(DATA_DIR, 'config.json');
 const SITUATIONS_FILE = path.join(DATA_DIR, 'situations.json');
 
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR);
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 if (!fs.existsSync(CHARACTERS_FILE)) fs.writeFileSync(CHARACTERS_FILE, '[]');
 if (!fs.existsSync(LISTS_FILE)) fs.writeFileSync(LISTS_FILE, '[]');
 if (!fs.existsSync(SITUATIONS_FILE)) fs.writeFileSync(SITUATIONS_FILE, '{}');
@@ -64,9 +70,7 @@ if (!fs.existsSync(LISTS_FILE)) fs.writeFileSync(LISTS_FILE, '["Misc"]');
 // Storage for images
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../public/uploads');
-        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-        cb(null, uploadDir);
+        cb(null, UPLOAD_DIR);
     },
     filename: (req, file, cb) => {
         const ext = path.extname(file.originalname);
@@ -75,7 +79,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use('/uploads', express.static(UPLOAD_DIR));
 
 // --- Endpoints ---
 
@@ -831,4 +835,37 @@ No preamble, no code blocks, just raw JSON.`;
     }
 });
 
-app.listen(port, '127.0.0.1', () => console.log(`Server running at http://127.0.0.1:${port}`));
+// --- Static UI Serving (for production/EXE) ---
+const clientDistPath = path.join(__dirname, '../../client/dist');
+if (fs.existsSync(clientDistPath)) {
+    console.log(`[Server] Serving Client UI from: ${clientDistPath}`);
+    app.use(express.static(clientDistPath));
+    // SPA fallback
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
+        res.sendFile(path.join(clientDistPath, 'index.html'));
+    });
+} else {
+    console.log('[Server] Client dist not found. Operating in API mode only.');
+}
+
+app.listen(port, '0.0.0.0', () => {
+    const url = `http://localhost:${port}`;
+    console.log(`[Server] Character LoRA Manager running at ${url}`);
+    console.log(`[Server] Data Directory: ${DATA_DIR}`);
+
+    // Automatically open browser ONLY when packaged (EXE)
+    if (IS_PKG) {
+        const { exec } = require('child_process');
+        const startCmd = process.platform === 'win32' ? 'start' : (process.platform === 'darwin' ? 'open' : 'xdg-open');
+
+        // Tiny delay to ensure server is fully responsive before browser opens
+        setTimeout(() => {
+            exec(`${startCmd} ${url}`, (err: any) => {
+                if (err) console.error('[Server] Failed to open browser automatically:', err.message);
+            });
+        }, 1000);
+    } else {
+        console.log(`[Server] Development mode detected. Skipping automatic browser opening.`);
+    }
+});
