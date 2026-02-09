@@ -2,10 +2,11 @@ import React, { useEffect, useState, useMemo, forwardRef } from 'react';
 import { getCharacters, createCharacter, updateCharacter, deleteCharacter, getLists, saveLists, reorderCharacters, renameList, deleteList } from '../api';
 import { CharacterCard } from '../components/CharacterCard';
 import { CharacterForm } from '../components/CharacterForm';
-import { Search, Plus, Filter, Folder, Hash, Heart, Copy, ZoomIn, ZoomOut, Edit2, Trash2, X, Loader2 } from 'lucide-react';
+import { Search, Plus, Filter, Folder, Hash, Heart, Copy, ZoomIn, ZoomOut, Edit2, Trash2, X, Loader2, Users } from 'lucide-react';
 import { VirtuosoGrid } from 'react-virtuoso';
 import { type Character } from '../types';
 import { arrayMove } from '@dnd-kit/sortable';
+import toast from 'react-hot-toast';
 
 const gridComponents = {
     List: forwardRef(({ style, children, ...props }: any, ref: any) => (
@@ -44,7 +45,6 @@ export const CharacterManager = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingChar, setEditingChar] = useState<Character | null>(null);
 
-    const [hoveredList, setHoveredList] = useState<string | null>(null);
     const containerRef = React.useRef<HTMLDivElement>(null);
 
     const getActiveVarIndex = (charId: string) => activeVariations[charId] || 0;
@@ -109,18 +109,29 @@ export const CharacterManager = () => {
 
     const handleDelete = async (id: string) => {
         if (confirm('本当に削除しますか？')) {
-            await deleteCharacter(id);
-            fetchData();
+            try {
+                await deleteCharacter(id);
+                fetchData();
+                toast.success('削除しました');
+            } catch (error) {
+                toast.error('削除に失敗しました');
+            }
         }
     };
 
     const handleSave = async (charData: Partial<Character>) => {
-        if (editingChar) {
-            await updateCharacter(editingChar.id, charData);
-        } else {
-            await createCharacter(charData);
+        try {
+            if (editingChar) {
+                await updateCharacter(editingChar.id, charData);
+                toast.success('更新しました');
+            } else {
+                await createCharacter(charData);
+                toast.success('作成しました');
+            }
+            fetchData();
+        } catch (error) {
+            toast.error('保存に失敗しました');
         }
-        fetchData();
     };
 
     const handleAddList = async () => {
@@ -151,8 +162,9 @@ export const CharacterManager = () => {
             setFavLists(updatedLists);
             if (selectedFavList === name) setSelectedFavList(null);
             fetchData();
+            toast.success('リストを削除しました');
         } catch (e) {
-            alert('削除できませんでした。デフォルトのリストは削除できない場合があります。');
+            toast.error('削除できませんでした。デフォルトのリストは削除できない場合があります。');
         }
     };
 
@@ -170,9 +182,11 @@ export const CharacterManager = () => {
             await updateCharacter(char.id, { favoriteLists: newLists });
             // Fully refresh to ensure consistency
             fetchData();
+            if (!isIncluded) toast.success(`「${listName}」に追加しました`);
+            else toast.success(`「${listName}」から削除しました`);
         } catch (e) {
             fetchData(); // Rollback/Refresh on error
-            alert('お気に入りの更新に失敗しました');
+            toast.error('お気に入りの更新に失敗しました');
         }
     };
 
@@ -227,8 +241,6 @@ export const CharacterManager = () => {
                         {favLists.map(list => (
                             <div
                                 key={list}
-                                onMouseEnter={() => setHoveredList(list)}
-                                onMouseLeave={() => setHoveredList(null)}
                                 className="sidebar-item-row"
                                 style={{ position: 'relative', borderRadius: '6px' }}
                             >
@@ -391,8 +403,37 @@ export const CharacterManager = () => {
                         <button onClick={fetchCharacters} className="btn-primary" style={{ marginTop: '1rem' }}>再試行</button>
                     </div>
                 ) : filteredCharacters.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>
-                        <p>キャラクターが見つかりません</p>
+                    <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        height: '100%', color: 'var(--text-secondary)', padding: '2rem'
+                    }}>
+                        {searchQuery ? (
+                            <>
+                                <Search size={48} strokeWidth={1.5} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+                                <p style={{ fontSize: '1.1rem', fontWeight: 500 }}>"{searchQuery}" に一致するキャラクターはいません</p>
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    style={{
+                                        marginTop: '1rem', background: 'transparent',
+                                        border: '1px solid var(--accent)', color: 'var(--accent)',
+                                        padding: '0.5rem 1rem', borderRadius: '6px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    検索をクリア
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Users size={48} strokeWidth={1.5} style={{ opacity: 0.3, marginBottom: '1rem' }} />
+                                <p style={{ fontSize: '1.1rem', fontWeight: 500 }}>まだキャラクターが登録されていません</p>
+                                <p style={{ fontSize: '0.9rem', opacity: 0.7, marginBottom: '1.5rem' }}>最初のキャラクターを追加しましょう</p>
+                                <button className="btn-primary" onClick={handleAdd}>
+                                    <Plus size={18} style={{ marginRight: '8px' }} />
+                                    新規キャラクター作成
+                                </button>
+                            </>
+                        )}
                     </div>
                 ) : (
                     <div style={{ flex: 1, paddingBottom: '4rem', '--card-width': `${200 * cardScale}px` } as any}>

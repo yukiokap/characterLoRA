@@ -4,6 +4,7 @@ import {
     getAppConfig, moveLoraNode, moveLoraNodesBatch,
     getLists, saveLists, renameList, deleteList, type LoraFile, type LoraMeta, api
 } from '../../../api';
+import toast from 'react-hot-toast';
 import { normalizePath, isSamePath } from '../utils';
 
 export const useLoraManager = () => {
@@ -52,8 +53,9 @@ export const useLoraManager = () => {
             }
             setMeta(normalizedMeta);
             setFavLists(lists || []);
-        } catch (e) {
+        } catch (e: any) {
             console.error(e);
+            toast.error('LoRAデータの取得に失敗しました');
         } finally {
             setLoading(false);
         }
@@ -86,8 +88,11 @@ export const useLoraManager = () => {
                 const pathsToMove = currentPaths.filter(p => !isSamePath(p, destPath));
                 if (pathsToMove.length > 0) {
                     moveLoraNodesBatch(pathsToMove, destPath)
-                        .then(() => fetchData())
-                        .catch((err: any) => alert('Bulk move failed: ' + (err.response?.data?.error || err.message)));
+                        .then(() => {
+                            fetchData();
+                            toast.success('移動しました');
+                        })
+                        .catch((err: any) => toast.error('移動に失敗しました: ' + (err.response?.data?.error || err.message)));
                 }
                 return [];
             });
@@ -98,7 +103,7 @@ export const useLoraManager = () => {
                 await moveLoraNode(sourcePath, '');
                 handleFetchWithDelay();
             } catch (error: any) {
-                alert('Move failed: ' + (error.response?.data?.error || error.message));
+                toast.error('移動に失敗しました: ' + (error.response?.data?.error || error.message));
             }
         };
 
@@ -230,9 +235,9 @@ export const useLoraManager = () => {
             };
             await api.post('/characters', payload);
             window.dispatchEvent(new CustomEvent('character-update'));
-            alert('キャラクターとして登録しました');
+            toast.success('キャラクターとして登録しました');
         } catch (e) {
-            alert('登録に失敗しました');
+            toast.error('登録に失敗しました');
         }
     };
 
@@ -288,7 +293,7 @@ export const useLoraManager = () => {
         }
         setBulkProgress(null);
         window.dispatchEvent(new CustomEvent('character-update'));
-        alert(`${successCount}件のキャラクターを登録しました`);
+        toast.success(`${successCount}件のキャラクターを登録しました`);
         setSelectedPaths([]);
     };
 

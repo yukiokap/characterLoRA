@@ -6,6 +6,7 @@ import { PromptGenerator } from './features/PromptGenerator';
 import { TagComposer } from './features/TagComposer';
 import { Users, Database, Sparkles, Tags, FileText, Settings, RefreshCw } from 'lucide-react';
 import { getAppConfig, updateAppConfig } from './api';
+import toast, { Toaster } from 'react-hot-toast';
 
 function App() {
   const [activeTab, setActiveTab] = useState<'characters' | 'loras' | 'wildcards' | 'batch' | 'composer'>('characters');
@@ -32,17 +33,39 @@ function App() {
   const saveApiKey = async () => {
     try {
       await updateAppConfig({ ...config, geminiApiKey: apiKey });
-      alert('設定を保存しました');
+      toast.success('設定を保存しました');
       setShowSettings(false);
       // Trigger refresh to reload with new directories
       handleRefresh();
     } catch (err) {
-      alert('保存に失敗しました');
+      toast.error('保存に失敗しました');
     }
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg-primary)', color: 'white' }}>
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          style: {
+            background: '#1e293b',
+            color: '#f8fafc',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#1e293b',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#1e293b',
+            },
+          },
+        }}
+      />
       {/* Top Navigation */}
       <header style={{
         height: '50px', borderBottom: '1px solid var(--border)',

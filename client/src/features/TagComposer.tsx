@@ -417,7 +417,7 @@ export const TagComposer = () => {
                                 {rows.map((row) => (
                                     <tr key={row.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', verticalAlign: 'top' }}>
                                         <td style={{ padding: '10px' }}>
-                                            <button onClick={() => copyRow(row)} title="Copy Row" style={{ background: 'transparent', border: 'none', color: copiedRowId === row.id ? '#10b981' : 'var(--accent)', cursor: 'pointer' }}>
+                                            <button onClick={() => copyRow(row)} title="Copy Row" className="action-icon-btn" style={{ background: 'transparent', border: 'none', color: copiedRowId === row.id ? '#10b981' : 'var(--accent)' }}>
                                                 {copiedRowId === row.id ? <Check size={16} /> : <Copy size={16} />}
                                             </button>
                                         </td>
@@ -437,7 +437,7 @@ export const TagComposer = () => {
                                             </td>
                                         ))}
                                         <td style={{ padding: '10px' }}>
-                                            <button onClick={() => removeRow(row.id)} title="Remove" style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', opacity: 0.6 }}>
+                                            <button onClick={() => removeRow(row.id)} title="Remove" className="action-icon-btn" style={{ background: 'transparent', border: 'none', color: '#ef4444' }}>
                                                 <Trash2 size={16} />
                                             </button>
                                         </td>

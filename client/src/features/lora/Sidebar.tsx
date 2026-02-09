@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Folder, Heart, Plus, Edit2, Trash2, Search, X } from 'lucide-react';
 import { type LoraFile } from '../../api';
 import { isSamePath } from './utils';
@@ -41,7 +41,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     searchQuery,
     onSearchQueryChange,
 }) => {
-    const [hoveredList, setHoveredList] = useState<string | null>(null);
 
     return (
         <aside className="sidebar" style={{ width: '250px', flexShrink: 0 }}>
@@ -90,8 +89,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {favLists.map(list => (
                         <div
                             key={list}
-                            onMouseEnter={() => setHoveredList(list)}
-                            onMouseLeave={() => setHoveredList(null)}
                             className="sidebar-item-row"
                             onDragOver={(e) => {
                                 e.preventDefault();
@@ -142,8 +139,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                     ))}
                     {favLists.length === 0 && (
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', opacity: 0.5, padding: '0.5rem 0.8rem' }}>
-                            リストがありません
+                        <div style={{
+                            fontSize: '0.8rem', color: 'var(--text-secondary)',
+                            opacity: 0.7, padding: '1rem', textAlign: 'center',
+                            border: '1px dashed var(--border)', borderRadius: '6px',
+                            cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center'
+                        }} onClick={onAddList}>
+                            <Plus size={24} style={{ marginBottom: '8px', opacity: 0.5 }} />
+                            <div>新規リスト作成</div>
                         </div>
                     )}
                 </div>
@@ -204,7 +207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             try {
                                 if (isBulk) {
                                     (window as any).dispatchEvent(new CustomEvent('lora-bulk-move', { detail: { destPath: '' } }));
-                                } else if (confirm(`Move "${sourcePath.split(/[\\\/]/).pop()}" to Root?`)) {
+                                } else if (confirm(`「${sourcePath.split(/[\\\/]/).pop()}」をルートに移動しますか？`)) {
                                     (window as any).dispatchEvent(new CustomEvent('lora-move-to-root', { detail: { sourcePath } }));
                                 }
                             } catch (error: any) { }
@@ -223,7 +226,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <button
                             onClick={async (e) => {
                                 e.stopPropagation();
-                                if (confirm(`Move ${selectedCount} items to Root?`)) {
+                                if (confirm(`${selectedCount}件のアイテムをルートに移動しますか？`)) {
                                     (window as any).dispatchEvent(new CustomEvent('lora-bulk-move', { detail: { destPath: '' } }));
                                 }
                             }}

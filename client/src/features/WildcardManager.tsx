@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getWildcardFiles, getWildcardContent, saveWildcardContent, createWildcardFile, deleteWildcardFile, getAppConfig, type WildcardFile } from '../api';
 import { Folder, FileText, Plus, Save, Trash2, Search, Wand2, ChevronRight, ChevronDown, X, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 
 export const WildcardManager = () => {
@@ -59,43 +60,46 @@ export const WildcardManager = () => {
         setIsSaving(true);
         try {
             await saveWildcardContent(selectedPath, content);
+            toast.success('保存しました');
         } catch (err) {
             console.error('Failed to save content', err);
-            alert('Save failed');
+            toast.error('保存に失敗しました');
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleCreateFile = async () => {
-        const name = prompt('Enter file name (e.g. colors.txt)');
+        const name = prompt('ファイル名を入力してください (例: colors.txt)');
         if (!name) return;
         try {
             await createWildcardFile('', name);
+            toast.success('ファイルを作成しました');
             fetchFiles();
         } catch (err) {
-            alert('Failed to create file');
+            toast.error('ファイルの作成に失敗しました');
         }
     };
 
     const handleDeleteFile = async (path: string, e: React.MouseEvent) => {
         e.stopPropagation();
-        if (!confirm(`Delete ${path}?`)) return;
+        if (!confirm(`「${path}」を削除しますか？`)) return;
         try {
             await deleteWildcardFile(path);
+            toast.success('削除しました');
             if (selectedPath === path) {
                 setSelectedPath(null);
                 setContent('');
             }
             fetchFiles();
         } catch (err) {
-            alert('Failed to delete');
+            toast.error('削除に失敗しました');
         }
     };
 
     const handleAISupport = async () => {
         if (!config.geminiApiKey) {
-            alert('Gemini APIキーをグローバル設定（画面右上の歯車アイコン）から設定してください。');
+            toast.error('Gemini APIキーをグローバル設定（画面右上の歯車アイコン）から設定してください。');
             return;
         }
 
@@ -289,8 +293,42 @@ export const WildcardManager = () => {
                 </div>
                 <div className="custom-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '0.5rem' }}>
                     {files.length === 0 ? (
-                        <div style={{ padding: '2rem', textAlign: 'center', opacity: 0.5, fontSize: '0.8rem' }}>
-                            ファイルが見つかりません。<br />設定を確認してください。
+                        <div style={{
+                            padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem'
+                        }}>
+                            {searchQuery ? (
+                                <>
+                                    <Search size={24} style={{ opacity: 0.3 }} />
+                                    <div style={{ fontSize: '0.9rem' }}>見つかりませんでした</div>
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        style={{
+                                            fontSize: '0.8rem', background: 'transparent',
+                                            border: '1px solid var(--border)', color: 'var(--text-secondary)',
+                                            padding: '4px 8px', borderRadius: '4px', cursor: 'pointer'
+                                        }}
+                                    >
+                                        クリア
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <FileText size={24} style={{ opacity: 0.3 }} />
+                                    <div style={{ fontSize: '0.9rem' }}>ファイルがありません</div>
+                                    <button
+                                        onClick={handleCreateFile}
+                                        style={{
+                                            fontSize: '0.8rem', background: 'transparent',
+                                            border: '1px solid var(--accent)', color: 'var(--accent)',
+                                            padding: '4px 8px', borderRadius: '4px', cursor: 'pointer',
+                                            display: 'flex', alignItems: 'center', gap: '4px'
+                                        }}
+                                    >
+                                        <Plus size={14} /> 新規作成
+                                    </button>
+                                </>
+                            )}
                         </div>
                     ) : renderTree(files)}
                 </div>
