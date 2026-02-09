@@ -220,7 +220,7 @@ export const useLoraManager = () => {
             } else {
                 baseTags = rawWords;
             }
-            const previewUrl = lora.previewPath ? `http://localhost:3001/api/loras/image?path=${encodeURIComponent(lora.previewPath)}` : null;
+            const previewUrl = lora.previewPath ? `/api/loras/image?path=${encodeURIComponent(lora.previewPath)}` : null;
             if (variations.length === 0 && previewUrl) variations = [{ id: `v-${Date.now()}`, name: '通常衣装', prompts: [] }];
 
             const pathParts = lora.path.split(/[\\\/]/);
@@ -275,7 +275,7 @@ export const useLoraManager = () => {
                     } catch (e) { }
                     setBulkProgress(prev => prev ? { ...prev, isAnalyzing: false } : null);
                 }
-                const previewUrl = lora.previewPath ? `http://localhost:3001/api/loras/image?path=${encodeURIComponent(lora.previewPath)}` : null;
+                const previewUrl = lora.previewPath ? `/api/loras/image?path=${encodeURIComponent(lora.previewPath)}` : null;
                 if (variations.length === 0 && previewUrl) variations = [{ id: `v-${Date.now()}-${i}`, name: '通常衣装', prompts: [] }];
                 const pathParts = lora.path.split(/[\\\/]/);
                 const series = pathParts.length > 1 ? pathParts[pathParts.length - 2] : '未分類';
@@ -380,7 +380,18 @@ export const useLoraManager = () => {
     const findDuplicateSets = (allFiles: LoraFile[]): Array<LoraFile[]> => {
         const sets: Record<string, LoraFile[]> = {};
         allFiles.forEach(f => {
-            const key = `${f.name}-${f.size}`;
+            // 1. 拡張子を除去
+            // 2. 名末尾の " (1)" や "(2)" を除去
+            // 3. 小文字化
+            const normalizedName = f.name
+                .replace(/\.(safetensors|pt|ckpt)$/i, '')
+                .replace(/\s*\(\d+\)$/, '')
+                .toLowerCase();
+
+            // 名前（正規化済）とサイズの両方が一致する場合のみを重複とみなす
+            // これにより、サイズが同じだけの別モデル（170件の誤検知）を防ぎます
+            const key = `${normalizedName}-${f.size || 0}`;
+
             if (!sets[key]) sets[key] = [];
             sets[key].push(f);
         });

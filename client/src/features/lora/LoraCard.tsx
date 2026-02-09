@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Globe, List, UserPlus, Copy, Info, Trash2, Heart, X, Edit2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { api, updateLoraMeta, uploadLoraPreview, deleteLoraNode, type LoraFile } from '../../api';
 import { formatSize } from './utils';
 
@@ -104,16 +105,19 @@ export const LoraCard: React.FC<LoraCardProps> = ({
         const name = file.name.replace(/\.(safetensors|pt|ckpt)$/i, '');
         const prompt = `<lora:${name}:1> ${triggerWords}`;
         navigator.clipboard.writeText(prompt);
+        toast.success('プロンプトをコピーしました');
     };
+
 
     const handleDelete = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (confirm(`WARNING: Are you sure you want to delete "${file.name}"?\nThis cannot be undone.`)) {
+        if (confirm(`警告: 「${file.name}」を本当に削除しますか？\nこの操作は元に戻せません。`)) {
             try {
                 await deleteLoraNode(file.path);
                 onDelete();
+                toast.success('削除しました');
             } catch (error: any) {
-                alert('Delete failed: ' + (error.response?.data?.error || error.message));
+                toast.error('削除に失敗しました: ' + (error.response?.data?.error || error.message));
             }
         }
     };
@@ -180,8 +184,9 @@ export const LoraCard: React.FC<LoraCardProps> = ({
                             try {
                                 await uploadLoraPreview(file.path, fileBlob);
                                 onDelete();
+                                toast.success('プレビュー画像を更新しました');
                             } catch (err: any) {
-                                alert('Upload failed: ' + err.message);
+                                toast.error('アップロードに失敗しました: ' + err.message);
                             }
                         }
                     }

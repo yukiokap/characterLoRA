@@ -39,8 +39,10 @@ const SITUATIONS_FILE = path.join(DATA_DIR, 'situations.json');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+// Initialize data files with defaults
 if (!fs.existsSync(CHARACTERS_FILE)) fs.writeFileSync(CHARACTERS_FILE, '[]');
-if (!fs.existsSync(LISTS_FILE)) fs.writeFileSync(LISTS_FILE, '[]');
+if (!fs.existsSync(LISTS_FILE)) fs.writeFileSync(LISTS_FILE, '["お気に入り"]');
 if (!fs.existsSync(SITUATIONS_FILE)) fs.writeFileSync(SITUATIONS_FILE, '{}');
 
 // --- Config Utils ---
@@ -62,10 +64,6 @@ function readLoraMeta() {
 function writeLoraMeta(meta: any) {
     fs.writeFileSync(LORA_META_FILE, JSON.stringify(meta, null, 2));
 }
-
-// Ensure files exist
-if (!fs.existsSync(CHARACTERS_FILE)) fs.writeFileSync(CHARACTERS_FILE, '[]');
-if (!fs.existsSync(LISTS_FILE)) fs.writeFileSync(LISTS_FILE, '["お気に入り"]');
 
 // Storage for images
 const storage = multer.diskStorage({

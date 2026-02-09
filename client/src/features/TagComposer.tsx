@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getAppConfig, updateAppConfig } from '../api';
 import { Tags, Copy, Check, Settings, Trash2, X, Plus, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface DecomposedRow {
     id: string;
@@ -74,8 +75,12 @@ export const TagComposer = () => {
 
     const analyzePrompts = async () => {
         if (!config.geminiApiKey) {
-            alert('SettingsからGemini APIキーを設定してください。');
+            toast.error('Gemini APIキーを設定してください');
             setShowSettings(true);
+            return;
+        }
+        if (!inputPrompts.trim()) {
+            toast.error('プロンプトを入力してください');
             return;
         }
 
@@ -214,7 +219,9 @@ export const TagComposer = () => {
             }
 
             if (skippedCount > 0) {
-                alert(`解析完了しましたが、${skippedCount}件のプロンプトがエラーによりスキップされました。`);
+                toast(`解析完了しましたが、${skippedCount}件のプロンプトがエラーによりスキップされました。`, { icon: '⚠️' });
+            } else {
+                toast.success('AI解析が完了しました');
             }
 
             setProcessingProgress({ current: totalLines, total: totalLines });
@@ -223,9 +230,10 @@ export const TagComposer = () => {
         } catch (error: any) {
             if (error.name === 'AbortError') {
                 console.log('Analysis aborted by user');
+                toast('解析をキャンセルしました');
             } else {
                 console.error('Analysis failed:', error);
-                alert(`解析に失敗しました:\n${error.message}`);
+                toast.error(`解析に失敗しました:\n${error.message}`);
             }
         } finally {
             setIsAnalyzing(false);
