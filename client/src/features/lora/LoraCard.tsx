@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Globe, List, UserPlus, Copy, Info, Trash2, Heart, X, Edit2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Globe, List, UserPlus, Copy, Info, Trash2, Heart, X, Edit2, Folder } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { api, updateLoraMeta, uploadLoraPreview, deleteLoraNode, type LoraFile } from '../../api';
 import { formatSize } from './utils';
@@ -144,6 +144,65 @@ export const LoraCard: React.FC<LoraCardProps> = ({
             silentFetch();
         }
     }, [file.modelId, file.path]);
+
+    if (file.type === 'directory') {
+        return (
+            <div
+                className="glass-panel lora-card folder-card"
+                style={{
+                    display: 'flex', flexDirection: 'column', height: `${320 * scale}px`, cursor: 'pointer',
+                    position: 'relative', padding: '1.5rem', border: '1px solid rgba(56, 189, 248, 0.2)',
+                    background: 'rgba(56, 189, 248, 0.05)',
+                    justifyContent: 'center', alignItems: 'center', transition: 'all 0.2s',
+                    overflow: 'hidden'
+                }}
+                draggable
+                onDragStart={(e) => {
+                    e.dataTransfer.setData('sourcePath', file.path);
+                    e.dataTransfer.effectAllowed = 'move';
+                }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    window.dispatchEvent(new CustomEvent('lora-select-folder', { detail: { path: file.path } }));
+                }}
+            >
+                <div style={{
+                    width: '64px', height: '64px', borderRadius: '50%',
+                    background: 'rgba(56, 189, 248, 0.1)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
+                    marginBottom: '1rem'
+                }}>
+                    <Folder size={32} fill="currentColor" fillOpacity={0.2} />
+                </div>
+                <div style={{ fontWeight: 'bold', fontSize: '1rem', textAlign: 'center', color: 'white', wordBreak: 'break-all', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {file.name}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>
+                    {file.children ? `${file.children.length} items` : 'Directory'}
+                </div>
+
+                <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
+                    <button
+                        onClick={handleDelete}
+                        className="action-icon-btn danger"
+                        title="フォルダ削除"
+                        style={{ padding: '6px' }}
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                </div>
+
+                <style>{`
+                    .folder-card:hover {
+                        background: rgba(56, 189, 248, 0.15) !important;
+                        border-color: var(--accent) !important;
+                        transform: translateY(-4px);
+                        box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+                    }
+                `}</style>
+            </div>
+        );
+    }
 
     return (
         <div

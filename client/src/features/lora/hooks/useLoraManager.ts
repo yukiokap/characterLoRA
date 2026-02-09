@@ -18,7 +18,7 @@ export const useLoraManager = () => {
     const [fetchedDescription, setFetchedDescription] = useState<string | null>(null);
     const [loadingDescription, setLoadingDescription] = useState(false);
     const [fetchedImages, setFetchedImages] = useState<any[]>([]);
-    const [sortMode, setSortMode] = useState<'name' | 'custom'>('custom');
+    const [sortMode, setSortMode] = useState<'name' | 'custom' | 'mtime'>('custom');
     const [bulkProgress, setBulkProgress] = useState<{ current: number, total: number, name: string, isAnalyzing?: boolean } | null>(null);
     const [isReordering, setIsReordering] = useState(false);
     const [cardScale, setCardScale] = useState(1);
@@ -89,7 +89,7 @@ export const useLoraManager = () => {
                 if (pathsToMove.length > 0) {
                     moveLoraNodesBatch(pathsToMove, destPath)
                         .then(() => {
-                            fetchData();
+                            handleFetchWithDelay();
                             toast.success('移動しました');
                         })
                         .catch((err: any) => toast.error('移動に失敗しました: ' + (err.response?.data?.error || err.message)));
@@ -107,11 +107,18 @@ export const useLoraManager = () => {
             }
         };
 
+        const selectFolderHandler = (e: any) => {
+            const { path } = e.detail;
+            handleSelectFolder(path);
+        };
+
         window.addEventListener('lora-bulk-move', handleBulkMove);
         window.addEventListener('lora-move-to-root' as any, moveHandler);
+        window.addEventListener('lora-select-folder' as any, selectFolderHandler);
         return () => {
             window.removeEventListener('lora-bulk-move', handleBulkMove);
             window.removeEventListener('lora-move-to-root' as any, moveHandler);
+            window.removeEventListener('lora-select-folder' as any, selectFolderHandler);
         };
     }, []);
 
@@ -317,7 +324,7 @@ export const useLoraManager = () => {
         return null;
     };
 
-    const handleReorder = async (draggedPath: string, targetPath: string, isBulk: boolean = false) => {
+    const handleReorder = async (draggedPath: string, targetPath: string, isBulk: boolean = false, isAfter: boolean = false) => {
         if (isSamePath(draggedPath, targetPath) || isReordering) return;
         setIsReordering(true);
         try {
@@ -329,49 +336,58 @@ export const useLoraManager = () => {
             }
             const parentNode = findNode(files, parent);
             const siblings = parentNode?.children || files;
-            const filesToReorder = siblings.filter(f => f.type === 'file');
-            const sortedInFolder = [...filesToReorder].sort((a, b) => {
+
+            // Include both files and folders in reordering siblings
+            const itemsToReorder = [...siblings].sort((a, b) => {
                 const orderA = getMetaValue(a.path)?.order ?? 9999;
                 const orderB = getMetaValue(b.path)?.order ?? 9999;
-                return (orderA !== orderB) ? orderA - orderB : a.name.localeCompare(b.name);
+                if (orderA !== orderB) return orderA - orderB;
+                // If order is same, prioritize directories then compare names
+                if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
+                return a.name.localeCompare(b.name);
             });
-            const newFiles = [...sortedInFolder];
+
+            const newItems = [...itemsToReorder];
             if (isBulk && selectedPaths.includes(draggedPath)) {
-                const itemsToMove = sortedInFolder.filter(f => selectedPaths.includes(f.path));
-                const remainingItems = sortedInFolder.filter(f => !selectedPaths.includes(f.path));
+                const itemsToMove = itemsToReorder.filter(f => selectedPaths.includes(f.path));
+                const remainingItems = itemsToReorder.filter(f => !selectedPaths.includes(f.path));
                 const targetIdx = remainingItems.findIndex(f => isSamePath(f.path, targetPath));
+
                 if (targetIdx === -1) {
-                    const originalTargetIdx = sortedInFolder.findIndex(f => isSamePath(f.path, targetPath));
-                    const before = sortedInFolder.filter(f => !selectedPaths.includes(f.path));
-                    const insertIdx = before.findIndex(f => sortedInFolder.indexOf(f) > originalTargetIdx);
-                    newFiles.length = 0;
+                    const originalTargetIdx = itemsToReorder.findIndex(f => isSamePath(f.path, targetPath));
+                    const before = itemsToReorder.filter(f => !selectedPaths.includes(f.path));
+                    const insertIdx = before.findIndex(f => itemsToReorder.indexOf(f) > originalTargetIdx);
+                    newItems.length = 0;
                     before.splice(insertIdx === -1 ? before.length : insertIdx, 0, ...itemsToMove);
-                    newFiles.push(...before);
+                    newItems.push(...before);
                 } else {
                     remainingItems.splice(targetIdx, 0, ...itemsToMove);
-                    newFiles.length = 0;
-                    newFiles.push(...remainingItems);
+                    newItems.length = 0;
+                    newItems.push(...remainingItems);
                 }
             } else {
-                const dIdx = newFiles.findIndex(f => isSamePath(f.path, draggedPath));
-                const tIdx = newFiles.findIndex(f => isSamePath(f.path, targetPath));
+                const dIdx = newItems.findIndex(f => isSamePath(f.path, draggedPath));
+                let tIdx = newItems.findIndex(f => isSamePath(f.path, targetPath));
                 if (dIdx !== -1 && tIdx !== -1) {
-                    const [removed] = newFiles.splice(dIdx, 1);
-                    newFiles.splice(tIdx, 0, removed);
+                    const [removed] = newItems.splice(dIdx, 1);
+                    // Re-calculate target index after removal if necessary
+                    tIdx = newItems.findIndex(f => isSamePath(f.path, targetPath));
+                    newItems.splice(isAfter ? tIdx + 1 : tIdx, 0, removed);
                 }
             }
+
             const newMeta = { ...meta };
-            const updates = newFiles.map((f, index) => {
+            const updates = newItems.map((f, index) => {
                 const normPath = normalizePath(f.path);
                 newMeta[normPath] = { ...(newMeta[normPath] || {}), order: index };
                 return { path: normPath, data: { order: index } };
             });
-            setMeta(newMeta);
             const res = await updateLoraMetaBatch(updates);
             if (res.success && isBulk) setSelectedPaths([]);
-            await fetchData();
+            await handleFetchWithDelay();
         } catch (e) {
-            fetchData();
+            console.error(e);
+            handleFetchWithDelay();
         } finally {
             setIsReordering(false);
         }
@@ -436,13 +452,19 @@ export const useLoraManager = () => {
 
     const duplicateSets = useMemo(() => showDuplicatesOnly ? findDuplicateSets(filteredFiles) : [], [showDuplicatesOnly, filteredFiles]);
     const sortedFiles = useMemo(() => [...filteredFiles].sort((a, b) => {
-        if (a.type === 'directory' && b.type === 'file') return -1;
-        if (a.type === 'file' && b.type === 'directory') return 1;
-        if (sortMode === 'custom' && a.type === 'file' && b.type === 'file') {
+        if (sortMode === 'custom') {
             const oa = getMetaValue(a.path)?.order ?? 9999;
             const ob = getMetaValue(b.path)?.order ?? 9999;
             if (oa !== ob) return oa - ob;
+        } else if (sortMode === 'mtime') {
+            const getMtime = (item: LoraFile) => item.mtime ? new Date(item.mtime).getTime() : 0;
+            const ma = getMtime(a);
+            const mb = getMtime(b);
+            if (ma !== mb) return mb - ma; // Descending: latest first
         }
+        // Fallback or non-custom mode
+        if (a.type === 'directory' && b.type === 'file') return -1;
+        if (a.type === 'file' && b.type === 'directory') return 1;
         return a.name.localeCompare(b.name);
     }), [filteredFiles, sortMode, meta]);
 

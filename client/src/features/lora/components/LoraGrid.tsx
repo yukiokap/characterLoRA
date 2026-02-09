@@ -3,7 +3,7 @@ import { VirtuosoGrid } from 'react-virtuoso';
 import { Folder } from 'lucide-react';
 import { LoraCard } from '../LoraCard';
 import { type LoraFile, type LoraMeta } from '../../../api';
-import { isSamePath, normalizePath } from '../utils';
+import { isSamePath } from '../utils';
 
 interface LoraGridProps {
     loading: boolean;
@@ -18,7 +18,7 @@ interface LoraGridProps {
     meta: LoraMeta;
     favLists: string[];
     selectedPaths: string[];
-    onReorder: (draggedPath: string, targetPath: string, isBulk: boolean) => void;
+    onReorder: (draggedPath: string, targetPath: string, isBulk: boolean, isAfter?: boolean) => void;
     onUpdateMeta: (path: string, newMeta: any) => void;
     onShowTags: (file: LoraFile) => void;
     onShowDescription: (file: LoraFile) => void;
@@ -39,7 +39,6 @@ export const LoraGrid: React.FC<LoraGridProps> = ({
     deferredCardScale,
     loraContainerRef,
     sortMode,
-    meta,
     favLists,
     selectedPaths,
     onReorder,
@@ -121,24 +120,40 @@ export const LoraGrid: React.FC<LoraGridProps> = ({
                         <div
                             onDragOver={sortMode === 'custom' ? (e) => {
                                 e.preventDefault();
-                                e.currentTarget.style.border = '2px solid var(--accent)';
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const midpoint = rect.left + rect.width / 2;
+                                if (e.clientX < midpoint) {
+                                    e.currentTarget.style.borderLeft = '4px solid var(--accent)';
+                                    e.currentTarget.style.borderRight = '2px solid transparent';
+                                } else {
+                                    e.currentTarget.style.borderRight = '4px solid var(--accent)';
+                                    e.currentTarget.style.borderLeft = '2px solid transparent';
+                                }
                                 e.currentTarget.style.borderRadius = '8px';
                             } : undefined}
                             onDragLeave={(e) => {
-                                e.currentTarget.style.border = '2px solid transparent';
+                                e.currentTarget.style.borderLeft = '2px solid transparent';
+                                e.currentTarget.style.borderRight = '2px solid transparent';
                             }}
                             onDrop={(e: any) => {
                                 if (sortMode !== 'custom') return;
                                 e.preventDefault();
                                 e.stopPropagation();
-                                e.currentTarget.style.border = '2px solid transparent';
+
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const midpoint = rect.left + rect.width / 2;
+                                const isAfter = e.clientX >= midpoint;
+
+                                e.currentTarget.style.borderLeft = '2px solid transparent';
+                                e.currentTarget.style.borderRight = '2px solid transparent';
+
                                 const sourcePath = e.dataTransfer.getData('sourcePath');
                                 const isBulk = e.dataTransfer.getData('isBulk') === 'true';
                                 if (sourcePath && !isSamePath(sourcePath, file.path)) {
-                                    onReorder(sourcePath, file.path, isBulk);
+                                    onReorder(sourcePath, file.path, isBulk, isAfter);
                                 }
                             }}
-                            style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
+                            style={{ borderLeft: '2px solid transparent', borderRight: '2px solid transparent', transition: 'all 0.1s', boxSizing: 'border-box' }}
                         >
                             <LoraCard
                                 key={file.path}
@@ -163,39 +178,56 @@ export const LoraGrid: React.FC<LoraGridProps> = ({
         );
     }
 
-    const flatFiles = sortedFiles.filter(f => f.type === 'file');
+    // In non-grouped mode, show both files and folders
+    const gridItems = sortedFiles;
 
     return (
         <VirtuosoGrid
             style={{ height: '100%' }}
             customScrollParent={loraContainerRef.current || undefined}
-            totalCount={flatFiles.length}
+            totalCount={gridItems.length}
             components={gridComponents}
             itemContent={(index) => {
-                const file = flatFiles[index];
+                const file = gridItems[index];
                 if (!file) return null;
                 return (
                     <div
                         onDragOver={sortMode === 'custom' ? (e) => {
                             e.preventDefault();
-                            e.currentTarget.style.border = '2px solid var(--accent)';
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const midpoint = rect.left + rect.width / 2;
+                            if (e.clientX < midpoint) {
+                                e.currentTarget.style.borderLeft = '4px solid var(--accent)';
+                                e.currentTarget.style.borderRight = '2px solid transparent';
+                            } else {
+                                e.currentTarget.style.borderRight = '4px solid var(--accent)';
+                                e.currentTarget.style.borderLeft = '2px solid transparent';
+                            }
                             e.currentTarget.style.borderRadius = '8px';
                         } : undefined}
                         onDragLeave={(e) => {
-                            e.currentTarget.style.border = '2px solid transparent';
+                            e.currentTarget.style.borderLeft = '2px solid transparent';
+                            e.currentTarget.style.borderRight = '2px solid transparent';
                         }}
                         onDrop={(e: any) => {
                             if (sortMode !== 'custom') return;
                             e.preventDefault();
                             e.stopPropagation();
-                            e.currentTarget.style.border = '2px solid transparent';
+
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const midpoint = rect.left + rect.width / 2;
+                            const isAfter = e.clientX >= midpoint;
+
+                            e.currentTarget.style.borderLeft = '2px solid transparent';
+                            e.currentTarget.style.borderRight = '2px solid transparent';
+
                             const sourcePath = e.dataTransfer.getData('sourcePath');
                             const isBulk = e.dataTransfer.getData('isBulk') === 'true';
                             if (sourcePath && !isSamePath(sourcePath, file.path)) {
-                                onReorder(sourcePath, file.path, isBulk);
+                                onReorder(sourcePath, file.path, isBulk, isAfter);
                             }
                         }}
-                        style={{ border: '2px solid transparent', transition: 'all 0.2s' }}
+                        style={{ borderLeft: '2px solid transparent', borderRight: '2px solid transparent', transition: 'all 0.1s', boxSizing: 'border-box' }}
                     >
                         <LoraCard
                             key={file.path}

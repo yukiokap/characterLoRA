@@ -8,8 +8,8 @@ interface FilterBarProps {
     onClearSelection: () => void;
     cardScale: number;
     onCardScaleChange: (scale: number) => void;
-    sortMode: 'name' | 'custom';
-    onSortModeChange: (mode: 'name' | 'custom') => void;
+    sortMode: 'name' | 'custom' | 'mtime';
+    onSortModeChange: (mode: 'name' | 'custom' | 'mtime') => void;
     showDuplicatesOnly: boolean;
     onToggleDuplicates: () => void;
     includeSubfolders: boolean;
@@ -88,6 +88,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                             border: 'none', color: 'white', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem'
                         }}
                     >名前順</button>
+                    <button
+                        onClick={() => onSortModeChange('mtime')}
+                        style={{
+                            background: sortMode === 'mtime' ? 'var(--accent)' : 'transparent',
+                            border: 'none', color: 'white', padding: '6px 14px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem'
+                        }}
+                    >更新順</button>
                     <button
                         onClick={() => onSortModeChange('custom')}
                         style={{

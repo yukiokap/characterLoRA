@@ -185,7 +185,7 @@
     "order": 0
   },
   "character/anime/Kinomoto Illustrious.safetensors": {
-    "order": 7
+    "order": 4
   },
   "character/anime/Kisaki Eri IL V2.safetensors": {
     "order": 1,
@@ -193,12 +193,6 @@
   },
   "character/anime/MilAiDou_1_8_Illustrious_Otome_New_V1_16dim_8alpha_3batch_CAME_Cosine_Res.safetensors": {
     "order": 2
-  },
-  "character/anime/rebecca_v1.safetensors": {
-    "order": 4
-  },
-  "character/anime/rikka-takarada-s1-illustriousxl-lora-nochekaiser.safetensors": {
-    "order": 37
   },
   "cum/Cum_bubble_thick_cum_IL.safetensors": {
     "triggerWords": "",
@@ -480,120 +474,6 @@
       "お気に入り"
     ]
   },
-  "character/persona/dqpom-illu-nvwls-v1.safetensors": {
-    "order": 0
-  },
-  "character/persona/p3aigis-ill.safetensors": {
-    "order": 1
-  },
-  "character/persona/Lavenza_ILLUS_c.safetensors": {
-    "order": 2
-  },
-  "character/persona/p3chidori-ill.safetensors": {
-    "order": 3
-  },
-  "character/persona/p3chihiro-ill.safetensors": {
-    "order": 4
-  },
-  "character/persona/p3elizabeth-ill.safetensors": {
-    "order": 5
-  },
-  "character/persona/p3fuuka-illV2.safetensors": {
-    "order": 6
-  },
-  "character/persona/p3kotone-ill.safetensors": {
-    "order": 7
-  },
-  "character/persona/p3mitsuru-illV2.safetensors": {
-    "order": 8
-  },
-  "character/persona/p3natsuki-ill.safetensors": {
-    "order": 9
-  },
-  "character/persona/p3toriumi-ill.safetensors": {
-    "order": 10
-  },
-  "character/persona/p3yukari-ill.safetensors": {
-    "order": 11
-  },
-  "character/persona/p3yuko-ill.safetensors": {
-    "order": 12
-  },
-  "character/persona/p4aika-ill.safetensors": {
-    "order": 13
-  },
-  "character/persona/p4ayane-ill.safetensors": {
-    "order": 14
-  },
-  "character/persona/p4chie-ill-V2.safetensors": {
-    "order": 15
-  },
-  "character/persona/p4ebihara-ill.safetensors": {
-    "order": 16
-  },
-  "character/persona/p4kashiwagi-ill.safetensors": {
-    "order": 17
-  },
-  "character/persona/p4margaret-ill.safetensors": {
-    "order": 18
-  },
-  "character/persona/p4marie-ill.safetensors": {
-    "order": 19
-  },
-  "character/persona/p4naoto-illV2.safetensors": {
-    "order": 20
-  },
-  "character/persona/p4rise-illV3.safetensors": {
-    "order": 21
-  },
-  "character/persona/p4yukiko-ill-V2.safetensors": {
-    "order": 22
-  },
-  "character/persona/p4yukiko-ill-V3.safetensors": {
-    "order": 23
-  },
-  "character/persona/p4yumi-ill.safetensors": {
-    "order": 24
-  },
-  "character/persona/p5annV4-ill.safetensors": {
-    "order": 25
-  },
-  "character/persona/p5chihaya-ill.safetensors": {
-    "order": 26
-  },
-  "character/persona/p5futaba-ill.safetensors": {
-    "order": 27
-  },
-  "character/persona/p5haru-illV2.safetensors": {
-    "order": 28
-  },
-  "character/persona/p5hifumi-illV2.safetensors": {
-    "order": 29
-  },
-  "character/persona/p5kawakami-ill.safetensors": {
-    "order": 30
-  },
-  "character/persona/p5makoto-illV3-cool.safetensors": {
-    "order": 31
-  },
-  "character/persona/p5ohya-ill.safetensors": {
-    "order": 32
-  },
-  "character/persona/p5sae-ill.safetensors": {
-    "order": 33
-  },
-  "character/persona/p5shiho-ill.safetensors": {
-    "order": 34
-  },
-  "character/persona/p5tae-ill.safetensors": {
-    "order": 35
-  },
-  "character/persona/p5yoshizawa-ill.safetensors": {
-    "order": 36
-  },
-  "character/persona/p5yoshizawa-illV2.safetensors": {
-    "order": 37
-  },
   "character/geme/DQ/anlucia_dqx.safetensors": {
     "order": 49
   },
@@ -734,90 +614,84 @@
     "order": 37
   },
   "character/anime/gundam/kp_DeuxMurasameGundamGQIllustrious_v1_1.safetensors": {
-    "order": 8
+    "order": 6
   },
   "character/anime/gundam/Shiiko_Sugai.safetensors": {
-    "order": 16
-  },
-  "character/anime/gundam/gundam_gquuuuuux_shiiko_sugai.safetensors": {
-    "order": 0
-  },
-  "character/anime/gundam/deuxmurasameillv3.1.safetensors": {
-    "order": 1
-  },
-  "character/anime/gundam/GQuX-amate_yuzuriha_XL(ill)v10.safetensors": {
     "order": 2
   },
+  "character/anime/gundam/gundam_gquuuuuux_shiiko_sugai.safetensors": {
+    "order": 3
+  },
+  "character/anime/gundam/deuxmurasameillv3.1.safetensors": {
+    "order": 4
+  },
+  "character/anime/gundam/GQuX-amate_yuzuriha_XL(ill)v10.safetensors": {
+    "order": 0
+  },
   "character/anime/gundam/Lalah_Sune_-_100percent_-_manga02.safetensors": {
-    "order": 9
+    "order": 8
   },
   "character/anime/gundam/deux_murasame_il.safetensors": {
     "triggerWords": "",
     "civitaiUrl": "https://civitai.com/models/1657884",
-    "order": 3
+    "order": 5
   },
   "character/anime/corrector yui-ill-01.safetensors": {
-    "order": 6,
+    "order": 3,
     "favoriteLists": [
       "お気に入り"
     ]
   },
   "character/anime/fujiwara_chika_v2.safetensors": {
-    "order": 18
+    "order": 5
   },
   "character/anime/haruhi-suzumiya-s1-illustriousxl-lora-nochekaiser.safetensors": {
-    "order": 19
+    "order": 6
   },
   "character/anime/HighschoolOfTheDead_MiyamotoRei_IlluXL.safetensors": {
-    "order": 24
+    "order": 11
   },
   "character/anime/HighschoolOfTheDead_TakagiSaya_IlluXL.safetensors": {
-    "order": 25
+    "order": 12
   },
   "character/anime/ichika_nakano-gotoubun_no_hanayome_s2-ixl-anime-soralz.safetensors": {
-    "order": 38
+    "order": 16
   },
   "character/anime/itsuki_nakano-gotoubun_no_hanayome_s2-ixl-anime-soralz.safetensors": {
-    "order": 39
+    "order": 17
   },
   "character/anime/JN_Saeko_Busujima_Illus.safetensors": {
-    "order": 26
+    "order": 13
   },
   "character/anime/JN_Shizuka_Marikawa_Illus.safetensors": {
-    "order": 27
+    "order": 14
   },
   "character/anime/Maou_ILXL.safetensors": {
-    "order": 29
+    "order": 15
   },
   "character/anime/miku_nakano-gotoubun_no_hanayome_s2-ixl-anime-soralz (1).safetensors": {
-    "order": 40
+    "order": 18
   },
   "character/anime/mikuru-asahina-s1-illustriousxl-lora-nochekaiser.safetensors": {
-    "order": 20
+    "order": 7
   },
   "character/anime/nino_nakano-gotoubun_no_hanayome_s2-ixl-anime-soralz.safetensors": {
-    "order": 41
-  },
-  "character/anime/SSSSGridman_ShinjouAkane_IlluXL.safetensors": {
-    "order": 35
-  },
-  "character/anime/SSSSGridman_TakaradaRikka_IlluXL.safetensors": {
-    "order": 36
+    "order": 19
   },
   "character/anime/yuki-nagato-s1-illustriousxl-lora-nochekaiser.safetensors": {
-    "order": 21
+    "order": 8
   },
   "character/anime/yusa_emi_XL_illustrious-noob_v1.safetensors": {
-    "order": 22
+    "order": 9
   },
   "character/anime/YusaEmiV12IllustriousXL.safetensors": {
-    "order": 23
+    "order": 10
   },
   "character/geme/DQ/dqmaam-illu-nvwls-v1.safetensors": {
     "order": 56
   },
   "character/anime/gundam/Vani_Kanchana_-_Gundam_GquuuuuuX_ILXL.safetensors": {
-    "order": 8
+    "order": 7
   },
   "character/geme/DQ/Maam_(Character)_ILXL.safetensors": {
     "order": 54
@@ -857,77 +731,11 @@
       "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/02e555ab-d655-47a6-a7ad-c220b8f8a333/original=true/104304346.jpeg",
       "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/246f305e-957d-4d26-b42a-bc1a7f4594c9/original=true/104324699.jpeg"
     ],
-    "order": 2,
+    "order": 0,
     "favoriteLists": []
   },
   "character/anime/セーラームーン/sailor_venus_animaginexl_v2.safetensors": {
-    "order": 5
-  },
-  "character/anime/jump/dark_magician_girl_illust_scarxzys.safetensors": {
-    "order": 45
-  },
-  "character/anime/jump/Asuka_Tenjoin_Noob_Lora.safetensors": {
-    "order": 44
-  },
-  "character/anime/jump/Apprentice Illusion Magician illuXL v1.safetensors": {
-    "order": 43
-  },
-  "character/anime/jump/Anzu_Mazaki_YGO_Duel_Monsters-000006.safetensors": {
-    "order": 42
-  },
-  "character/anime/jump/kamishiro_rio_ilxl_v1.safetensors": {
-    "order": 47
-  },
-  "character/anime/jump/Dragonmaid latys illuXL v2.safetensors": {
-    "order": 46
-  },
-  "character/anime/jump/Lovely labrynth of the silver castle illuXL v2.safetensors": {
-    "order": 48
-  },
-  "character/anime/jump/Magi Magi Magician Gal illuXL v1.1.safetensors": {
-    "order": 49
-  },
-  "character/anime/jump/Mai_Valentine_Noob_Lora.safetensors": {
-    "order": 50
-  },
-  "character/anime/jump/MALICE Pawn White Rabbit illuXL v1.safetensors": {
-    "order": 51
-  },
-  "character/anime/jump/Nurse dragonmaid illuXL v1.1.safetensors": {
-    "order": 52
-  },
-  "character/anime/jump/saotome_rei_ilxl_v1.safetensors": {
-    "order": 53
-  },
-  "character/anime/jump/Tearlaments rulkallos illusXL v3.safetensors": {
-    "order": 54
-  },
-  "character/anime/jump/MALICE Pawn March Hare illusXL v2.safetensors": {
-    "order": 55
-  },
-  "character/anime/jump/MALICE Queen White Binder illuXL v1.2.safetensors": {
-    "order": 56
-  },
-  "character/anime/jump/mgrcminamirena_IL.safetensors": {
-    "order": 57
-  },
-  "character/anime/jump/Witchcrafter Madame Verre illuXL v1.safetensors": {
-    "order": 58
-  },
-  "character/anime/jump/Bulma__ブルマ_-_Dragon_Ball_Classic.safetensors": {
-    "order": 59
-  },
-  "character/anime/jump/bulmaill-000004.safetensors": {
-    "favoriteLists": [],
-    "order": 60
-  },
-  "character/anime/jump/checkpoint-e39_s819 (1).safetensors": {
-    "triggerWords": "bulla, 1girl, solo, blue eyes, long hair, blue hair, bangs,hairband, hoop earrings, red crop top, choker, elbow gloves, fingerless gloves, midriff, navel, belt, red skirt, thighhighs,",
-    "civitaiUrl": "",
-    "order": 61
-  },
-  "character/anime/jump/ZangyaDragonballIXL.safetensors": {
-    "order": 62
+    "order": 4
   },
   "character/anime/プリキュア/cureanswer.safetensors": {
     "order": 13
@@ -961,23 +769,20 @@
     "order": 8,
     "alias": ""
   },
-  "character/anime/jump/Ooku_Jochu_FGO-000006.safetensors": {
-    "order": 3
-  },
   "character/anime/まどまぎ/kanamemadokaILM.safetensors": {
-    "order": 32
+    "order": 0
   },
   "character/anime/まどまぎ/akemihomuraILM.safetensors": {
-    "order": 31
+    "order": 6
   },
   "character/anime/まどまぎ/mamitomoeILM.safetensors": {
-    "order": 30
+    "order": 4
   },
   "character/anime/まどまぎ/Tamaki_Iroha.safetensors": {
-    "order": 33
+    "order": 9
   },
   "character/anime/まどまぎ/sayaka-miki-s1-illustriousxl-lora-nochekaiser.safetensors": {
-    "order": 34
+    "order": 3
   },
   "character/geme/DQ/99coins_monster_wrangler_dq3_IL_12.safetensors": {
     "order": 26
@@ -1011,5 +816,923 @@
   },
   "character/geme/DQ/Serenica - Dragon Quest.safetensors": {
     "order": 48
+  },
+  "character/anime/AEMeguminIlx.safetensors": {
+    "order": 35
+  },
+  "character/anime/Ai_Kaminari__Ai-chan__Yatterman-2_Illustrious.safetensors": {
+    "order": 20
+  },
+  "character/anime/Alicia Idersia illustxl.safetensors": {
+    "order": 21
+  },
+  "character/anime/Aphrodite_Record_of_Ragnarok_-_Illustrious_V2.safetensors": {
+    "order": 22
+  },
+  "character/anime/Aqua-IL-v2-09.safetensors": {
+    "order": 32
+  },
+  "character/anime/aura-the-guillotine-s1-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 23
+  },
+  "character/anime/Fern_v1.0_illustrious-000034.safetensors": {
+    "order": 24
+  },
+  "character/anime/Frieren_v1.0_illustrious-000030.safetensors": {
+    "order": 25
+  },
+  "character/anime/Fujimiya Sumika illustxl.safetensors": {
+    "order": 26
+  },
+  "character/anime/Hana_Uzaki_illustrious-XL.safetensors": {
+    "order": 27
+  },
+  "character/anime/hibari05.safetensors": {
+    "order": 28
+  },
+  "character/anime/Hoseki_MyDressUpDarling_MarinKitagawa_IllustriousXL_v1.safetensors": {
+    "order": 29
+  },
+  "character/anime/IsekaiOjisan_Sui_IlluXL.safetensors": {
+    "order": 30
+  },
+  "character/anime/Kofune Ushio.safetensors": {
+    "order": 36
+  },
+  "character/anime/lalatina-dustiness-ford-s2-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 33
+  },
+  "character/anime/Mabel Leyber illustxl.safetensors": {
+    "order": 31
+  },
+  "character/anime/Megumin Illustrious v4 - By Liver020.safetensors": {
+    "order": 34
+  },
+  "character/anime/Mio-IL-v1-08.safetensors": {
+    "order": 38
+  },
+  "character/anime/nekomusume.safetensors": {
+    "order": 39
+  },
+  "character/anime/SummertimeUshio-v2-05.safetensors": {
+    "order": 37
+  },
+  "character/anime/Yatterman_Doronjo_IL.safetensors": {
+    "order": 40
+  },
+  "character/Julekas6IL.safetensors": {
+    "order": 1
+  },
+  "character/anime/グレンラガン/Nia Illu.safetensors": {
+    "order": 46
+  },
+  "character/anime/グレンラガン/yoko-littner-s1-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 45
+  },
+  "character/anime/Cyberpunk/rebecca_v1.safetensors": {
+    "order": 3
+  },
+  "character/anime/jump/DB/ZangyaDragonballIXL.safetensors": {
+    "order": 62
+  },
+  "character/anime/jump/DB/checkpoint-e39_s819 (1).safetensors": {
+    "triggerWords": "bulla, 1girl, solo, blue eyes, long hair, blue hair, bangs,hairband, hoop earrings, red crop top, choker, elbow gloves, fingerless gloves, midriff, navel, belt, red skirt, thighhighs,",
+    "civitaiUrl": "",
+    "order": 61
+  },
+  "character/anime/jump/DB/bulmaill-000004.safetensors": {
+    "favoriteLists": [],
+    "order": 60
+  },
+  "character/anime/jump/DB/Bulma__ブルマ_-_Dragon_Ball_Classic.safetensors": {
+    "order": 59
+  },
+  "character/anime/jump/Yu-Gi-Ou/Anzu_Mazaki_YGO_Duel_Monsters-000006.safetensors": {
+    "order": 42
+  },
+  "character/anime/jump/Yu-Gi-Ou/Apprentice Illusion Magician illuXL v1.safetensors": {
+    "order": 43
+  },
+  "character/anime/jump/Yu-Gi-Ou/Asuka_Tenjoin_Noob_Lora.safetensors": {
+    "order": 44
+  },
+  "character/anime/jump/Yu-Gi-Ou/dark_magician_girl_illust_scarxzys.safetensors": {
+    "order": 45
+  },
+  "character/anime/jump/Yu-Gi-Ou/Dragonmaid latys illuXL v2.safetensors": {
+    "order": 46
+  },
+  "character/anime/jump/Yu-Gi-Ou/kamishiro_rio_ilxl_v1.safetensors": {
+    "order": 47
+  },
+  "character/anime/jump/Yu-Gi-Ou/Lovely labrynth of the silver castle illuXL v2.safetensors": {
+    "order": 48
+  },
+  "character/anime/jump/Yu-Gi-Ou/Magi Magi Magician Gal illuXL v1.1.safetensors": {
+    "order": 49
+  },
+  "character/anime/jump/Yu-Gi-Ou/Mai_Valentine_Noob_Lora.safetensors": {
+    "order": 50
+  },
+  "character/anime/jump/Yu-Gi-Ou/MALICE Pawn White Rabbit illuXL v1.safetensors": {
+    "order": 51
+  },
+  "character/anime/jump/Yu-Gi-Ou/Nurse dragonmaid illuXL v1.1.safetensors": {
+    "order": 52
+  },
+  "character/anime/jump/Yu-Gi-Ou/saotome_rei_ilxl_v1.safetensors": {
+    "order": 53
+  },
+  "character/anime/jump/Yu-Gi-Ou/Tearlaments rulkallos illusXL v3.safetensors": {
+    "order": 54
+  },
+  "character/anime/jump/Yu-Gi-Ou/MALICE Pawn March Hare illusXL v2.safetensors": {
+    "order": 55
+  },
+  "character/anime/jump/Yu-Gi-Ou/MALICE Queen White Binder illuXL v1.2.safetensors": {
+    "order": 56
+  },
+  "character/anime/jump/Yu-Gi-Ou/mgrcminamirena_IL.safetensors": {
+    "order": 57
+  },
+  "character/anime/jump/Yu-Gi-Ou/Witchcrafter Madame Verre illuXL v1.safetensors": {
+    "order": 58
+  },
+  "character/anime/SSS/SSSSGridman_TakaradaRikka_IlluXL.safetensors": {
+    "order": 18
+  },
+  "character/anime/SSS/SSSSGridman_ShinjouAkane_IlluXL.safetensors": {
+    "order": 17
+  },
+  "character/anime/SSS/rikka-takarada-s1-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 19
+  },
+  "character/anime/jump/ワンパンマン/Yuta_One-Punch_Man.safetensors": {
+    "order": 10
+  },
+  "character/geme/FGO/Ooku_Jochu_FGO-000006.safetensors": {
+    "order": 0
+  },
+  "character/anime/jump/TOLOVEる/Kotegawa Yui(tlr)-Illus.safetensors": {
+    "order": 4
+  },
+  "character/anime/jump/TOLOVEる/Sairenji Haruna(tlr)-Illus.safetensors": {
+    "order": 9
+  },
+  "character/anime/Angela_Balzac_ILXL.safetensors": {
+    "order": 41
+  },
+  "character/anime/jump/地獄先生ぬ～べ/Hosokawa_miki-000004.safetensors": {
+    "order": 1
+  },
+  "character/anime/jump/ニセコイ/Nisekoi_OnoderaHaru_IlluXL.safetensors": {
+    "order": 5
+  },
+  "character/anime/jump/ニセコイ/kosaki-onodera-s2-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 6
+  },
+  "character/anime/jump/ニセコイ/Nisekoi_OnoderaKosaki_IlluXL.safetensors": {
+    "order": 7
+  },
+  "character/anime/jump/ニセコイ/Nisekoi_TachibanaMarika_IlluXL.safetensors": {
+    "order": 8
+  },
+  "character/geme/persona/dqpom-illu-nvwls-v1.safetensors": {
+    "order": 0
+  },
+  "character/geme/persona/p3aigis-ill.safetensors": {
+    "order": 1
+  },
+  "character/geme/persona/Lavenza_ILLUS_c.safetensors": {
+    "order": 2
+  },
+  "character/geme/persona/p3chidori-ill.safetensors": {
+    "order": 3
+  },
+  "character/geme/persona/p3chihiro-ill.safetensors": {
+    "order": 4
+  },
+  "character/geme/persona/p3elizabeth-ill.safetensors": {
+    "order": 5
+  },
+  "character/geme/persona/p3fuuka-illV2.safetensors": {
+    "order": 6
+  },
+  "character/geme/persona/p3kotone-ill.safetensors": {
+    "order": 7
+  },
+  "character/geme/persona/p3mitsuru-illV2.safetensors": {
+    "order": 8
+  },
+  "character/geme/persona/p3natsuki-ill.safetensors": {
+    "order": 9
+  },
+  "character/geme/persona/p3toriumi-ill.safetensors": {
+    "order": 10
+  },
+  "character/geme/persona/p3yukari-ill.safetensors": {
+    "order": 11
+  },
+  "character/geme/persona/p3yuko-ill.safetensors": {
+    "order": 12
+  },
+  "character/geme/persona/p4aika-ill.safetensors": {
+    "order": 13
+  },
+  "character/geme/persona/p4ayane-ill.safetensors": {
+    "order": 14
+  },
+  "character/geme/persona/p4chie-ill-V2.safetensors": {
+    "order": 15
+  },
+  "character/geme/persona/p4ebihara-ill.safetensors": {
+    "order": 16
+  },
+  "character/geme/persona/p4kashiwagi-ill.safetensors": {
+    "order": 17
+  },
+  "character/geme/persona/p4margaret-ill.safetensors": {
+    "order": 18
+  },
+  "character/geme/persona/p4marie-ill.safetensors": {
+    "order": 19
+  },
+  "character/geme/persona/p4naoto-illV2.safetensors": {
+    "order": 20
+  },
+  "character/geme/persona/p4rise-illV3.safetensors": {
+    "order": 21
+  },
+  "character/geme/persona/p4yukiko-ill-V2.safetensors": {
+    "order": 22
+  },
+  "character/geme/persona/p4yukiko-ill-V3.safetensors": {
+    "order": 23
+  },
+  "character/geme/persona/p4yumi-ill.safetensors": {
+    "order": 24
+  },
+  "character/geme/persona/p5annV4-ill.safetensors": {
+    "order": 25
+  },
+  "character/geme/persona/p5chihaya-ill.safetensors": {
+    "order": 26
+  },
+  "character/geme/persona/p5futaba-ill.safetensors": {
+    "order": 27
+  },
+  "character/geme/persona/p5haru-illV2.safetensors": {
+    "order": 28
+  },
+  "character/geme/persona/p5hifumi-illV2.safetensors": {
+    "order": 29
+  },
+  "character/geme/persona/p5kawakami-ill.safetensors": {
+    "order": 30
+  },
+  "character/geme/persona/p5makoto-illV3-cool.safetensors": {
+    "order": 31
+  },
+  "character/geme/persona/p5ohya-ill.safetensors": {
+    "order": 32
+  },
+  "character/geme/persona/p5sae-ill.safetensors": {
+    "order": 33
+  },
+  "character/geme/persona/p5shiho-ill.safetensors": {
+    "order": 34
+  },
+  "character/geme/persona/p5tae-ill.safetensors": {
+    "order": 35
+  },
+  "character/geme/persona/p5yoshizawa-ill.safetensors": {
+    "order": 36
+  },
+  "character/geme/persona/p5yoshizawa-illV2.safetensors": {
+    "order": 37
+  },
+  "character/geme/ILVPFreya.safetensors": {
+    "order": 1
+  },
+  "character/geme/ILVPLenneth.safetensors": {
+    "order": 2
+  },
+  "character/geme/JN_Valkyrie_no_Densetsu_Illus.safetensors": {
+    "order": 3
+  },
+  "character/geme/Mikihara_Akemi_isaku_PC98_IS.safetensors": {
+    "order": 4
+  },
+  "character/geme/Nono_Kurusu_-_CHAOSCHILD.safetensors": {
+    "order": 5
+  },
+  "character/geme/Serika_Onoe_-_CHAOSCHILD.safetensors": {
+    "order": 6
+  },
+  "character/geme/cckunosato.safetensors": {
+    "order": 7
+  },
+  "character/geme/hana.safetensors": {
+    "order": 8
+  },
+  "character/geme/hinae.safetensors": {
+    "order": 9
+  },
+  "character/geme/uki.safetensors": {
+    "order": 10
+  },
+  "character/geme/God Eater/Ashihara_Yuno_IL_1.0.safetensors": {
+    "order": 5
+  },
+  "character/geme/任天堂/anegasaki_nene_ilxl_v1.safetensors": {
+    "order": 0
+  },
+  "character/geme/任天堂/Bowsette.safetensors": {
+    "order": 21
+  },
+  "character/geme/任天堂/kobayakawa_rinko_ilxl_v1.safetensors": {
+    "order": 2
+  },
+  "character/geme/任天堂/mythra-xb-richy-v1_ixl.safetensors": {
+    "order": 7
+  },
+  "character/geme/任天堂/nia-illu-nvwls-v1.safetensors": {
+    "order": 13
+  },
+  "character/geme/任天堂/ootzelda-illu-nvwls-v1.safetensors": {
+    "order": 4
+  },
+  "character/geme/任天堂/Paltenaパルテナ新光神話_パルテナの鏡.safetensors": {
+    "order": 3
+  },
+  "character/geme/任天堂/patricia_abelheim_XL_illustrious-noob_v1.safetensors": {
+    "order": 14
+  },
+  "character/geme/任天堂/Pauline.safetensors": {
+    "order": 22
+  },
+  "character/geme/任天堂/pneuma-xb-richy-v1_ixl.safetensors": {
+    "order": 8
+  },
+  "character/geme/任天堂/Princess_Daisy.safetensors": {
+    "order": 15
+  },
+  "character/geme/任天堂/Princess_King_Boo.safetensors": {
+    "order": 19
+  },
+  "character/geme/任天堂/Princess_Peach.safetensors": {
+    "order": 16
+  },
+  "character/geme/任天堂/princess_zelda_XL_illustrious-noob_v1.safetensors": {
+    "order": 5
+  },
+  "character/geme/任天堂/princess-king-boo-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 20
+  },
+  "character/geme/任天堂/PrincessDaisyDef-10.safetensors": {
+    "order": 17
+  },
+  "character/geme/任天堂/pyra-xb-richy-v1_ixl.safetensors": {
+    "order": 6
+  },
+  "character/geme/任天堂/Rrincess_Rosalina.safetensors": {
+    "order": 18
+  },
+  "character/geme/任天堂/Samus AranIlluLorav2.safetensors": {
+    "order": 23
+  },
+  "character/geme/任天堂/samus_aran.safetensors": {
+    "order": 24
+  },
+  "character/geme/任天堂/Frye_Game-accurate_Splatoon_Illustrious.safetensors": {
+    "order": 25
+  },
+  "character/geme/任天堂/Frye_illustrious_v1.safetensors": {
+    "order": 26
+  },
+  "character/geme/任天堂/Marina_Splatoon-000015.safetensors": {
+    "order": 27
+  },
+  "character/geme/任天堂/marina-10.safetensors": {
+    "order": 28
+  },
+  "character/geme/任天堂/NormalCallieIllustrious.safetensors": {
+    "order": 29
+  },
+  "character/geme/任天堂/NormalMarieIllustrious.safetensors": {
+    "order": 30
+  },
+  "character/geme/任天堂/Pearl_Splatoon_2.safetensors": {
+    "order": 31
+  },
+  "character/geme/任天堂/Shiver_Splatoon_Illustrious.safetensors": {
+    "order": 32
+  },
+  "character/geme/任天堂/takane_manaka_ilxl_v1.safetensors": {
+    "order": 1
+  },
+  "character/geme/任天堂/Xenoblade Chronicles 2 - Kasandra illusXL v1.2.safetensors": {
+    "order": 10
+  },
+  "character/geme/任天堂/Xenoblade Chronicles 2 - Kora illusXL v1.safetensors": {
+    "order": 11
+  },
+  "character/geme/任天堂/Xenoblade Chronicles 2 - Perun illusXL v1.safetensors": {
+    "order": 12
+  },
+  "character/geme/任天堂/Xenoblade Chronicles 2 - Vale illusXL v1.safetensors": {
+    "order": 9
+  },
+  "character/geme/God Eater/alisage_IL-100007.safetensors": {
+    "order": 0
+  },
+  "character/geme/God Eater/Ciel_Alencon_IL_1.0.safetensors": {
+    "order": 1
+  },
+  "character/geme/God Eater/God_Eater_3_-_Claire_Victorious__ゴッドイーター3_-_クレアヴィクトリアス.safetensors": {
+    "order": 2
+  },
+  "character/geme/God Eater/KanonGE-illu-bsinky-v1.safetensors": {
+    "order": 3
+  },
+  "character/geme/God Eater/Kouzuki_Nana_IL_1.0.safetensors": {
+    "order": 4
+  },
+  "character/geme/God Eater/Elina_der_Vogelweide_IL_1.0.safetensors": {
+    "order": 6
+  },
+  "character/geme/God Eater/ginadickinson-illu-nvwls-v1.safetensors": {
+    "order": 7
+  },
+  "character/geme/God Eater/Hoshino_Urara_IL_1.0.safetensors": {
+    "order": 8
+  },
+  "character/anime/gundam": {
+    "order": 43
+  },
+  "character/anime/Cyberpunk": {
+    "order": 44
+  },
+  "character/anime/EVA": {
+    "order": 45
+  },
+  "character/anime/Gravion": {
+    "order": 46
+  },
+  "character/anime/jump": {
+    "order": 42
+  },
+  "character/anime/old": {
+    "order": 47
+  },
+  "character/anime/SAO": {
+    "order": 48
+  },
+  "character/anime/SSS": {
+    "order": 49
+  },
+  "character/anime/グレンラガン": {
+    "order": 50
+  },
+  "character/anime/けいおん": {
+    "order": 51
+  },
+  "character/anime/コードギアス": {
+    "order": 52
+  },
+  "character/anime/シュタゲ": {
+    "order": 53
+  },
+  "character/anime/スレイヤーズ": {
+    "order": 54
+  },
+  "character/anime/セーラームーン": {
+    "order": 55
+  },
+  "character/anime/トップをねらえ": {
+    "order": 56
+  },
+  "character/anime/プリキュア": {
+    "order": 57
+  },
+  "character/anime/マクロス": {
+    "order": 58
+  },
+  "character/anime/まどまぎ": {
+    "order": 59
+  },
+  "character/anime/ラブライブ": {
+    "order": 60
+  },
+  "character/anime/海外": {
+    "order": 61
+  },
+  "character/anime/超電磁砲": {
+    "order": 62
+  },
+  "character/anime/jump/DB": {
+    "order": 0
+  },
+  "character/anime/jump/NARUTO": {
+    "order": 2
+  },
+  "character/anime/jump/TOLOVEる": {
+    "order": 11
+  },
+  "character/anime/jump/Yu-Gi-Ou": {
+    "order": 4
+  },
+  "character/anime/jump/いちご100％": {
+    "order": 12
+  },
+  "character/anime/jump/ニセコイ": {
+    "order": 13
+  },
+  "character/anime/jump/ヒロアカ": {
+    "order": 7
+  },
+  "character/anime/jump/ブリーチ": {
+    "order": 3
+  },
+  "character/anime/jump/ワンパンマン": {
+    "order": 10
+  },
+  "character/anime/jump/ワンピース": {
+    "order": 1
+  },
+  "character/anime/jump/鬼滅": {
+    "order": 5
+  },
+  "character/anime/jump/銀魂": {
+    "order": 9
+  },
+  "character/anime/jump/食戟のソーマ": {
+    "order": 8
+  },
+  "character/anime/jump/地獄先生ぬ～べ": {
+    "order": 6
+  },
+  "character/anime/jump/いちご100％/ichigo100-kitaooji.safetensors": {
+    "order": 4
+  },
+  "character/anime/jump/いちご100％/ichigo100-nishino.safetensors": {
+    "order": 5
+  },
+  "character/anime/jump/いちご100％/ichigo100-toujou.safetensors": {
+    "order": 6
+  },
+  "character/anime/セーラームーン/Sailor_Moon_v3.safetensors": {
+    "order": 0
+  },
+  "character/anime/セーラームーン/ilsailorpluto.safetensors": {
+    "order": 7
+  },
+  "character/anime/セーラームーン/Sailor_jupiter_V4.safetensors": {
+    "order": 3
+  },
+  "character/anime/セーラームーン/Sailor_Mars_V4.safetensors": {
+    "order": 2
+  },
+  "character/anime/セーラームーン/Sailor_Mercury_V4.safetensors": {
+    "order": 1
+  },
+  "character/anime/セーラームーン/Sailor_Neptune_V4.safetensors": {
+    "order": 8
+  },
+  "character/anime/セーラームーン/Sailor_Saturn_V5.safetensors": {
+    "order": 6
+  },
+  "character/anime/セーラームーン/sailor_uranus_V3.safetensors": {
+    "order": 9
+  },
+  "character/anime/セーラームーン/Sailor_venus_V5.safetensors": {
+    "order": 5
+  },
+  "character/anime/まどまぎ/Akemi Homura illu  .safetensors": {
+    "order": 5
+  },
+  "character/anime/まどまぎ/Kaname Madoka illu v2.safetensors": {
+    "order": 1
+  },
+  "character/anime/まどまぎ/KanamiHonoka-10.safetensors": {
+    "order": 13
+  },
+  "character/anime/まどまぎ/kyouko-sakura-s1-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 7
+  },
+  "character/anime/まどまぎ/mgrcfutabasana_IL.safetensors": {
+    "order": 10
+  },
+  "character/anime/まどまぎ/mgrcirohatamaki_IL.safetensors": {
+    "order": 8
+  },
+  "character/anime/まどまぎ/mgrcjunia_IL.safetensors": {
+    "order": 14
+  },
+  "character/anime/まどまぎ/mgrckiratemari_IL.safetensors": {
+    "order": 15
+  },
+  "character/anime/まどまぎ/mgrcminamirena_IL.safetensors": {
+    "order": 11
+  },
+  "character/anime/まどまぎ/mgrctsurunoyui_IL.safetensors": {
+    "order": 12
+  },
+  "character/anime/まどまぎ/Miki Sayaka illu.safetensors": {
+    "order": 2
+  },
+  "character/anime/海外/Alice_-_Disney_Illustrious.safetensors": {
+    "order": 4
+  },
+  "character/anime/海外/AMeghanXLP_character-12.safetensors": {
+    "order": 0
+  },
+  "character/anime/海外/ArielXL_character-12.safetensors": {
+    "order": 6
+  },
+  "character/anime/海外/Belle-IL.safetensors": {
+    "order": 8
+  },
+  "character/anime/海外/ClassicTinker-IL-000016.safetensors": {
+    "order": 2
+  },
+  "character/anime/海外/DisneyAlice.safetensors": {
+    "order": 3
+  },
+  "character/anime/海外/DisneyAriel.safetensors": {
+    "order": 5
+  },
+  "character/anime/海外/DisneyBelle.safetensors": {
+    "order": 7
+  },
+  "character/anime/海外/ILDisneyPocahontas.safetensors": {
+    "order": 9
+  },
+  "character/anime/海外/ILDisneyRapunzel.safetensors": {
+    "order": 10
+  },
+  "character/anime/海外/ILDisneySn0wWh1t3.safetensors": {
+    "order": 12
+  },
+  "character/anime/海外/AAnnaXL_character-12.safetensors": {
+    "order": 18
+  },
+  "character/anime/海外/ASueStorm_character-12.safetensors": {
+    "order": 27
+  },
+  "character/anime/海外/BARBIE_TOY_STORY_3_ILLUSTRIOUS.safetensors": {
+    "order": 24
+  },
+  "character/anime/海外/blackwidowMR-10.safetensors": {
+    "order": 28
+  },
+  "character/anime/海外/BobeepXLP_character-10.safetensors": {
+    "order": 15
+  },
+  "character/anime/海外/Cinderella-IL.safetensors": {
+    "order": 16
+  },
+  "character/anime/海外/daggerMR-guy90-Illust-LoraV101.safetensors": {
+    "order": 29
+  },
+  "character/anime/海外/ElsaXL_Character-12.safetensors": {
+    "order": 17
+  },
+  "character/anime/海外/emma_frost_marvel_rivals_ilxl_goofy.safetensors": {
+    "order": 30
+  },
+  "character/anime/海外/emmafrostMR-guy90-Illust-LoraV202.safetensors": {
+    "order": 31
+  },
+  "character/anime/海外/Ghost SpiderilluLoRA.safetensors": {
+    "order": 32
+  },
+  "character/anime/海外/Gwen_StacyIL.safetensors": {
+    "order": 34
+  },
+  "character/anime/海外/helen_p-e9.safetensors": {
+    "order": 19
+  },
+  "character/anime/海外/hoppsJudyztIL.safetensors": {
+    "order": 20
+  },
+  "character/anime/海外/JanePorterXL_Character-12.safetensors": {
+    "order": 21
+  },
+  "character/anime/海外/Jasmine-IL_V2.safetensors": {
+    "order": 22
+  },
+  "character/anime/海外/JessicaRabbitXL_character-12-IL.safetensors": {
+    "order": 23
+  },
+  "character/anime/海外/JessieXLP_character-10.safetensors": {
+    "order": 25
+  },
+  "character/anime/海外/LunaSnow.safetensors": {
+    "order": 35
+  },
+  "character/anime/海外/LunaSnowCoolSummer_Illu_Dwnsty.safetensors": {
+    "order": 36
+  },
+  "character/anime/海外/maleficent iIlluLoRA.safetensors": {
+    "order": 26
+  },
+  "character/anime/海外/MR_PeniParker-IL.safetensors": {
+    "order": 37
+  },
+  "character/anime/海外/MsMarvel_CarolDanvers_IL.safetensors": {
+    "order": 38
+  },
+  "character/anime/海外/Penny_Parker_Rivals.safetensors": {
+    "order": 39
+  },
+  "character/anime/海外/Pocahontas-IL-000017.safetensors": {
+    "order": 14
+  },
+  "character/anime/海外/psylocke_vengeance_v.safetensors": {
+    "order": 40
+  },
+  "character/anime/海外/Psylockev1_Illu_Dwnsty.safetensors": {
+    "order": 41
+  },
+  "character/anime/海外/RapunzelXL_character-12.safetensors": {
+    "order": 11
+  },
+  "character/anime/海外/SnowWhite_V2.safetensors": {
+    "order": 13
+  },
+  "character/anime/海外/Spider-Woman (Julia Carpenter) v1.0 [LoRA] - Illustrious-XL v0.1.safetensors": {
+    "order": 33
+  },
+  "character/anime/海外/squirrelgirlIL.safetensors": {
+    "order": 42
+  },
+  "character/anime/海外/TinkerExtra_character-10(Illustrous).safetensors": {
+    "order": 1
+  },
+  "character/anime/EVA/Asuka_evangelion.safetensors": {
+    "order": 0
+  },
+  "character/anime/EVA/asuka_seva_illus-05.safetensors": {
+    "order": 1
+  },
+  "character/anime/EVA/asuka-langley-soryuu-rebuild-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 2
+  },
+  "character/anime/EVA/rei_seva_illus-08.safetensors": {
+    "order": 3
+  },
+  "character/anime/EVA/ReiAyanamiIL.safetensors": {
+    "order": 4
+  },
+  "character/anime/EVA/Illustrious_Mari_School_v1-000007.safetensors": {
+    "order": 5
+  },
+  "character/anime/EVA/Mari_Makinami_Illustrious.safetensors": {
+    "order": 6
+  },
+  "character/anime/EVA/Maya_Ibuki-000001.safetensors": {
+    "order": 7
+  },
+  "character/anime/EVA/Midori_Kitakami.safetensors": {
+    "order": 8
+  },
+  "character/anime/EVA/misato_seva_illus-08.safetensors": {
+    "order": 9
+  },
+  "character/anime/けいおん/Akiyama Mio [Don't Say Lazy](kon)-Illus.safetensors": {
+    "order": 0
+  },
+  "character/anime/けいおん/Hirasawa Yui [Don't Say Lazy](kon)-Illus.safetensors": {
+    "order": 1
+  },
+  "character/anime/けいおん/Kotobuki Tsumugi [Don't Say Lazy](kon)-Illus.safetensors": {
+    "order": 2
+  },
+  "character/anime/けいおん/ritsu-konIL.safetensors": {
+    "order": 3
+  },
+  "character/anime/けいおん/Tainaka Ritsu [Don't Say Lazy](kon)-Illus.safetensors": {
+    "order": 4
+  },
+  "character/anime/けいおん/mio-akiyama-s2-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 5
+  },
+  "character/anime/けいおん/nodoka-manabe-s2-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 6
+  },
+  "character/anime/けいおん/sawako-yamanaka-s2-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 7
+  },
+  "character/anime/けいおん/tsumugi-kotobuki-s2-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 8
+  },
+  "character/anime/けいおん/ui-hirasawa-s2-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 9
+  },
+  "character/anime/けいおん/yui-hirasawa-s2-illustriousxl-lora-nochekaiser.safetensors": {
+    "order": 10
+  },
+  "character/Rumi_KPop_Demon_Hunters_LoRa_Illustrious.safetensors": {
+    "order": 2
+  },
+  "character/Zoey_K-Pop_Demon_Hunters_LoRa_Illustrious-000009.safetensors": {
+    "order": 3
+  },
+  "character/anime": {
+    "order": 4
+  },
+  "character/geme": {
+    "order": 5
+  },
+  "character/man": {
+    "order": 6
+  },
+  "character/vocaloide": {
+    "order": 7
+  },
+  "character/vtuber": {
+    "order": 8
+  },
+  "character/anime/gundam/agnes_g_IL1-300009.safetensors": {
+    "order": 9
+  },
+  "character/anime/gundam/aina_sahalim_v2.01.safetensors": {
+    "order": 10
+  },
+  "character/anime/gundam/Allenby Beasley.safetensors": {
+    "order": 11
+  },
+  "character/anime/gundam/Artesia - Gundam The Origin.safetensors": {
+    "order": 12
+  },
+  "character/anime/gundam/Ayame_Illu.safetensors": {
+    "order": 13
+  },
+  "character/anime/gundam/cagalli_y_IL1-200009.safetensors": {
+    "order": 14
+  },
+  "character/anime/gundam/Cecilia_Irene_-_Gundam_GquuuuuuX_ILXL.safetensors": {
+    "order": 15
+  },
+  "character/anime/gundam/comoli_harcourt_ilxl_v1,3.safetensors": {
+    "order": 16
+  },
+  "character/anime/gundam/feldtgrace_ill.safetensors": {
+    "order": 17
+  },
+  "character/anime/gundam/fray_a_IL1-600008.safetensors": {
+    "order": 18
+  },
+  "character/anime/gundam/Fumina_Test.safetensors": {
+    "order": 19
+  },
+  "character/anime/gundam/Haman Karn IL.safetensors": {
+    "order": 20
+  },
+  "character/anime/gundam/ill_zz_ple_ver2.safetensors": {
+    "order": 21
+  },
+  "character/anime/gundam/ill_zz_pletwo_ver2.safetensors": {
+    "order": 22
+  },
+  "character/anime/gundam/illustriousXL chuchu V1.safetensors": {
+    "order": 23
+  },
+  "character/anime/gundam/Iori.safetensors": {
+    "order": 24
+  },
+  "character/anime/gundam/lafterfrankland-illu-nvwls-v1.safetensors": {
+    "order": 25
+  },
+  "character/anime/gundam/Lalah_Sune_-_Gundam_GquuuuuuX_ILXL.safetensors": {
+    "order": 26
+  },
+  "character/anime/gundam/Lunamaria_Hawke_SEED_Destiny_Illustrious.safetensors": {
+    "order": 27
+  },
+  "character/anime/gundam/Machu-V2.safetensors": {
+    "order": 1
+  },
+  "character/anime/gundam/Meer_Campbell-Gundam_SEED_Destiny-V3.safetensors": {
+    "order": 28
+  },
+  "character/anime/gundam/Nyaan.safetensors": {
+    "order": 29
+  },
+  "character/anime/gundam/Reiko_Holinger_Illustrious_V1.0.safetensors": {
+    "order": 30
+  },
+  "character/anime/gundam/stellar_l_IL1-300008.safetensors": {
+    "order": 31
+  },
+  "character/anime/gundam/Sumeragi_Lee_Noriega.safetensors": {
+    "order": 32
+  },
+  "character/anime/gundam/Tiffa Adill - After War Gundam X.safetensors": {
+    "order": 33
+  },
+  "character/anime/gundam/Wang_Liu_Mei.safetensors": {
+    "order": 34
   }
 }

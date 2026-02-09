@@ -53,7 +53,9 @@ function readConfig() {
     return config;
 }
 function writeConfig(config: any) {
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+    const tempFile = CONFIG_FILE + '.tmp';
+    fs.writeFileSync(tempFile, JSON.stringify(config, null, 2));
+    fs.renameSync(tempFile, CONFIG_FILE);
 }
 
 // --- LoRA Meta Utils ---
@@ -62,7 +64,9 @@ function readLoraMeta() {
     return JSON.parse(fs.readFileSync(LORA_META_FILE, 'utf8'));
 }
 function writeLoraMeta(meta: any) {
-    fs.writeFileSync(LORA_META_FILE, JSON.stringify(meta, null, 2));
+    const tempFile = LORA_META_FILE + '.tmp';
+    fs.writeFileSync(tempFile, JSON.stringify(meta, null, 2));
+    fs.renameSync(tempFile, LORA_META_FILE);
 }
 
 // Storage for images
