@@ -74,6 +74,7 @@ export interface LoraFile {
     localVersionId?: number;
     civitaiImages?: string[];
     description?: string;
+    generation?: string;
 }
 
 export interface LoraMeta {

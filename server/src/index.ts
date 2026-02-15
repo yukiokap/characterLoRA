@@ -252,6 +252,62 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
 
 // --- LoRA Features ---
 
+function getSafetensorsMetadata(filePath: string): any {
+    try {
+        const fd = fs.openSync(filePath, 'r');
+        const headerSizeBuffer = Buffer.alloc(8);
+        fs.readSync(fd, headerSizeBuffer, 0, 8, 0);
+        const headerSize = headerSizeBuffer.readBigUInt64LE();
+        if (headerSize > 1024 * 1024 * 10) { // Safety: 10MB max header
+            fs.closeSync(fd);
+            return {};
+        }
+        const headerBuffer = Buffer.alloc(Number(headerSize));
+        fs.readSync(fd, headerBuffer, 0, Number(headerSize), 8);
+        fs.closeSync(fd);
+        const header = JSON.parse(headerBuffer.toString());
+        return header.__metadata__ || {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function detectGeneration(fullPath: string, civitaiInfo: any, meta: any): string {
+    // 1. Check Meta Cache
+    if (meta?.generation) return meta.generation;
+
+    // 2. Check Civitai Info
+    if (civitaiInfo) {
+        const base = (civitaiInfo.baseModel || civitaiInfo.modelVersions?.[0]?.baseModel || '').toLowerCase();
+        if (base.includes('pony')) return 'Pony';
+        if (base.includes('illustrious')) return 'Illustrious';
+        if (base.includes('sdxl') || base.includes('xl')) return 'SDXL';
+        if (base.includes('sd 1.5') || base.includes('v1.5')) return 'SD1.5';
+        if (base.includes('flux')) return 'FLUX';
+    }
+
+    // 3. Check Filename keywords
+    const lowerName = path.basename(fullPath).toLowerCase();
+    if (lowerName.includes('pony')) return 'Pony';
+    if (lowerName.includes('illustrious')) return 'Illustrious';
+    if (lowerName.includes('sdxl') || lowerName.includes('_xl')) return 'SDXL';
+
+    // 4. Check Safetensors Metadata
+    if (fullPath.endsWith('.safetensors')) {
+        const md = getSafetensorsMetadata(fullPath);
+        const base = (md.ss_base_model_name || '').toLowerCase();
+        if (base.includes('xl-base-1.0')) return 'SDXL';
+        if (base.includes('v1-5')) return 'SD1.5';
+        if (base.includes('pony')) return 'Pony';
+        if (base.includes('illustrious')) return 'Illustrious';
+
+        // Check hashing or other clues in metadata if needed
+        if (md.ss_sd_model_name?.toLowerCase().includes('xl')) return 'SDXL';
+    }
+
+    return 'Unknown';
+}
+
 function scanDirectory(dir: string, rootDir: string): any[] {
     if (!fs.existsSync(dir)) return [];
     let items: string[] = [];
@@ -300,7 +356,7 @@ function scanDirectory(dir: string, rootDir: string): any[] {
                             fLower === nLower + '.preview.png') && f !== item;
                     });
 
-                    // Try to find modelId and trainedWords from .civitai.info or .info
+                    let generation = 'Unknown';
                     let modelId = undefined;
                     let trainedWords: string[] = [];
                     let civitaiImages: string[] = [];
@@ -308,17 +364,23 @@ function scanDirectory(dir: string, rootDir: string): any[] {
                     const altInfoFile = path.join(dir, nameNoExt + '.info');
                     const targetInfoFile = fs.existsSync(infoFile) ? infoFile : (fs.existsSync(altInfoFile) ? altInfoFile : null);
 
+                    let infoObj = null;
                     if (targetInfoFile) {
                         try {
-                            const info = JSON.parse(fs.readFileSync(targetInfoFile, 'utf8'));
-                            modelId = info.modelId || info.id;
-                            if (info.trainedWords && Array.isArray(info.trainedWords)) {
-                                trainedWords = info.trainedWords;
+                            infoObj = JSON.parse(fs.readFileSync(targetInfoFile, 'utf8'));
+                            modelId = infoObj.modelId || infoObj.id;
+                            if (infoObj.trainedWords && Array.isArray(infoObj.trainedWords)) {
+                                trainedWords = infoObj.trainedWords;
                             }
-                            const rawImages = info.modelVersions?.[0]?.images || info.images || [];
+                            const rawImages = infoObj.modelVersions?.[0]?.images || infoObj.images || [];
                             civitaiImages = rawImages.map((img: any) => typeof img === 'string' ? img : img.url).filter(Boolean);
                         } catch (e) { }
                     }
+
+                    generation = detectGeneration(fullPath, infoObj, meta[relPath]);
+
+                    // If detected but not in meta, we could save it, but let's just use it dynamically for now
+                    // If it's a slow process, we might want to cache it in meta.
 
                     result.push({
                         type: 'file',
@@ -329,6 +391,7 @@ function scanDirectory(dir: string, rootDir: string): any[] {
                         previewPath: preview ? path.relative(rootDir, path.join(dir, preview)).replace(/\\/g, '/') : null,
                         modelId,
                         trainedWords,
+                        generation,
                         civitaiImages: (civitaiImages.length > 0) ? civitaiImages : (meta[relPath]?.civitaiImages || []),
                         civitaiUrl: modelId ? `https://civitai.com/models/${modelId}` : (meta[relPath]?.civitaiUrl || null)
                     });

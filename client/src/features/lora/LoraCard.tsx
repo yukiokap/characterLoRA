@@ -26,9 +26,6 @@ export const LoraCard: React.FC<LoraCardProps> = ({
     scale = 1, showPath = false, isSelected = false, onToggleSelect, selectedCount = 0, onRegisterCharacter
 }) => {
     const displayName = file.name.replace(/\.(safetensors|pt|ckpt)$/i, '');
-    const isXL = file.name.toLowerCase().includes('xl');
-    const isPony = file.name.toLowerCase().includes('pony');
-    const isIllustrious = file.name.toLowerCase().includes('illust') || file.name.toLowerCase().includes(' il');
     const [triggerWords, setTriggerWords] = useState(meta?.triggerWords || '');
     const [civitaiUrl, setCivitaiUrl] = useState(meta?.civitaiUrl || file.civitaiUrl || '');
     const [isEditing, setIsEditing] = useState(false);
@@ -298,6 +295,7 @@ export const LoraCard: React.FC<LoraCardProps> = ({
                         No Preview<br />Drop Image/MP4 to upload
                     </div>
                 )}
+
             </div>
 
             {allImages.length > 1 && (
@@ -433,9 +431,17 @@ export const LoraCard: React.FC<LoraCardProps> = ({
                     <span style={{ background: '#2563eb', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>LORA</span>
                 </div>
                 <div style={{ display: 'flex', gap: '5px' }}>
-                    {isIllustrious && <span style={{ background: '#4f46e5', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>Illustrious</span>}
-                    {isXL && <span style={{ background: '#7c3aed', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>XL</span>}
-                    {isPony && <span style={{ background: '#db2777', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold' }}>Pony</span>}
+                    {file.generation && file.generation !== 'Unknown' && (
+                        <span style={{
+                            background: file.generation === 'Pony' ? '#db2777' :
+                                file.generation === 'SDXL' ? '#7c3aed' :
+                                    file.generation === 'Illustrious' ? '#4f46e5' :
+                                        '#64748b',
+                            color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold'
+                        }}>
+                            {file.generation}
+                        </span>
+                    )}
                 </div>
             </div>
 
